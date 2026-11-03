@@ -1,0 +1,40 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Test & coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local uploads from web UI
+uploads/
+
+# Node / Frontend development dependencies
+frontend/node_modules/
+frontend/.vite/
+frontend/dist-ssr/
+frontend/*.local
+
+# Large raw intermediate matrix (>100MB, not required by dashboard)
+pipeline_outputs/features_scaled.npy
+
+# Raw satellite imagery (>3 GB, keep metadata and manifests)
+Data/EuroSAT/*/*.jpg
+Data/EuroSATallBands/*/*.tif
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
