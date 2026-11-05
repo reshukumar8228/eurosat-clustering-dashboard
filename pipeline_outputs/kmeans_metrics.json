@@ -1,0 +1,121 @@
+{
+  "2": {
+    "k": 2,
+    "inertia": 167659232.0,
+    "silhouette": 0.3933793604373932,
+    "davies_bouldin": 1.0294819845258387,
+    "calinski_harabasz": 4068.6273017410467,
+    "fit_time_seconds": 1.4038927555084229
+  },
+  "3": {
+    "k": 3,
+    "inertia": 131647584.0,
+    "silhouette": 0.3112761676311493,
+    "davies_bouldin": 1.2503024912031213,
+    "calinski_harabasz": 3299.7057182806,
+    "fit_time_seconds": 2.0851407051086426
+  },
+  "4": {
+    "k": 4,
+    "inertia": 117356704.0,
+    "silhouette": 0.23436762392520905,
+    "davies_bouldin": 1.447937697874029,
+    "calinski_harabasz": 2662.2987749936347,
+    "fit_time_seconds": 2.7429287433624268
+  },
+  "5": {
+    "k": 5,
+    "inertia": 110010968.0,
+    "silhouette": 0.20026645064353943,
+    "davies_bouldin": 1.7211391779526903,
+    "calinski_harabasz": 2207.145332853767,
+    "fit_time_seconds": 3.4119131565093994
+  },
+  "6": {
+    "k": 6,
+    "inertia": 105823376.0,
+    "silhouette": 0.1617029309272766,
+    "davies_bouldin": 1.9103980036570913,
+    "calinski_harabasz": 1882.1859073139426,
+    "fit_time_seconds": 3.860588312149048
+  },
+  "7": {
+    "k": 7,
+    "inertia": 103292128.0,
+    "silhouette": 0.14261987805366516,
+    "davies_bouldin": 2.25781679531669,
+    "calinski_harabasz": 1628.7656047026344,
+    "fit_time_seconds": 4.401137113571167
+  },
+  "8": {
+    "k": 8,
+    "inertia": 101296488.0,
+    "silhouette": 0.14123061299324036,
+    "davies_bouldin": 2.306006596973326,
+    "calinski_harabasz": 1439.6868857738768,
+    "fit_time_seconds": 4.3996360301971436
+  },
+  "9": {
+    "k": 9,
+    "inertia": 99578240.0,
+    "silhouette": 0.14145691692829132,
+    "davies_bouldin": 2.382836789629541,
+    "calinski_harabasz": 1290.159954530852,
+    "fit_time_seconds": 4.788761615753174
+  },
+  "10": {
+    "k": 10,
+    "inertia": 98248096.0,
+    "silhouette": 0.11035827547311783,
+    "davies_bouldin": 2.45559219731936,
+    "calinski_harabasz": 1170.5372182066383,
+    "fit_time_seconds": 5.4361467361450195,
+    "adjusted_rand_index": 0.12855070482553185,
+    "normalized_mutual_info": 0.24775376561427467,
+    "overall_purity": 0.3098888888888889,
+    "per_cluster_purity": [
+      0.2838983050847458,
+      0.5388554216867469,
+      0.18053596614950634,
+      0.28093158660844253,
+      0.3528347406513872,
+      0.21613327487943884,
+      0.292259083728278,
+      0.7850553505535055,
+      0.29265402843601895,
+      0.2526539278131635
+    ]
+  },
+  "11": {
+    "k": 11,
+    "inertia": 97189096.0,
+    "silhouette": 0.09208172559738159,
+    "davies_bouldin": 2.5168377979071788,
+    "calinski_harabasz": 1068.6129305252564,
+    "fit_time_seconds": 6.846240997314453
+  },
+  "12": {
+    "k": 12,
+    "inertia": 96204840.0,
+    "silhouette": 0.09122790396213531,
+    "davies_bouldin": 2.650883483408536,
+    "calinski_harabasz": 989.6935455378581,
+    "fit_time_seconds": 7.344203948974609
+  },
+  "15": {
+    "k": 15,
+    "inertia": 93876360.0,
+    "silhouette": 0.07832437008619308,
+    "davies_bouldin": 2.702066966005618,
+    "calinski_harabasz": 806.7931865859443,
+    "fit_time_seconds": 9.514731168746948
+  },
+  "20": {
+    "k": 20,
+    "inertia": 91206376.0,
+    "silhouette": 0.06699664890766144,
+    "davies_bouldin": 2.806735223415793,
+    "calinski_harabasz": 620.6957010796602,
+    "fit_time_seconds": 10.3255774974823
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "perplexities": [
+    5,
+    15,
+    30,
+    50,
+    100
+  ],
+  "max_iter": 1000,
+  "random_state": 42,
+  "input_dim": 220,
+  "sample_count": 5000,
+  "subset_indices_file": "tsne_subset_indices.npy",
+  "perp_5": {
+    "kl_divergence": 2.295620918273926,
+    "output_file": "tsne_2d_perp5.npy"
+  },
+  "perp_15": {
+    "kl_divergence": 2.1032490730285645,
+    "output_file": "tsne_2d_perp15.npy"
+  },
+  "perp_30": {
+    "kl_divergence": 1.8393774032592773,
+    "output_file": "tsne_2d_perp30.npy"
+  },
+  "perp_50": {
+    "kl_divergence": 1.6154181957244873,
+    "output_file": "tsne_2d_perp50.npy"
+  },
+  "perp_100": {
+    "kl_divergence": 1.2958358526229858,
+    "output_file": "tsne_2d_perp100.npy"
+  }
+}

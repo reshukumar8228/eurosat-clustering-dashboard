@@ -1,0 +1,82 @@
+{
+  "0": {
+    "cluster_id": 0,
+    "majority_true_label": "AnnualCrop",
+    "majority_label_id": 0,
+    "majority_count": 670,
+    "count": 2360,
+    "purity": 0.2838983050847458
+  },
+  "1": {
+    "cluster_id": 1,
+    "majority_true_label": "Forest",
+    "majority_label_id": 1,
+    "majority_count": 1789,
+    "count": 3320,
+    "purity": 0.5388554216867469
+  },
+  "2": {
+    "cluster_id": 2,
+    "majority_true_label": "AnnualCrop",
+    "majority_label_id": 0,
+    "majority_count": 640,
+    "count": 3545,
+    "purity": 0.18053596614950634
+  },
+  "3": {
+    "cluster_id": 3,
+    "majority_true_label": "Forest",
+    "majority_label_id": 1,
+    "majority_count": 1158,
+    "count": 4122,
+    "purity": 0.28093158660844253
+  },
+  "4": {
+    "cluster_id": 4,
+    "majority_true_label": "AnnualCrop",
+    "majority_label_id": 0,
+    "majority_count": 585,
+    "count": 1658,
+    "purity": 0.3528347406513872
+  },
+  "5": {
+    "cluster_id": 5,
+    "majority_true_label": "River",
+    "majority_label_id": 8,
+    "majority_count": 986,
+    "count": 4562,
+    "purity": 0.21613327487943884
+  },
+  "6": {
+    "cluster_id": 6,
+    "majority_true_label": "Pasture",
+    "majority_label_id": 5,
+    "majority_count": 370,
+    "count": 1266,
+    "purity": 0.292259083728278
+  },
+  "7": {
+    "cluster_id": 7,
+    "majority_true_label": "Industrial",
+    "majority_label_id": 4,
+    "majority_count": 851,
+    "count": 1084,
+    "purity": 0.7850553505535055
+  },
+  "8": {
+    "cluster_id": 8,
+    "majority_true_label": "Industrial",
+    "majority_label_id": 4,
+    "majority_count": 247,
+    "count": 844,
+    "purity": 0.29265402843601895
+  },
+  "9": {
+    "cluster_id": 9,
+    "majority_true_label": "Residential",
+    "majority_label_id": 7,
+    "majority_count": 1071,
+    "count": 4239,
+    "purity": 0.2526539278131635
+  }
+}
