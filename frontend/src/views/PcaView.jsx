@@ -1,0 +1,278 @@
+import React, { useState, useEffect } from 'react';
+import { Layers, Activity, Eye, Sliders } from 'lucide-react';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  ResponsiveContainer, 
+  CartesianGrid 
+} from 'recharts';
+
+const CLASS_COLORS = {
+  AnnualCrop: '#2ca02c',
+  Forest: '#006400',
+  HerbaceousVegetation: '#8c564b',
+  Highway: '#7f7f7f',
+  Industrial: '#e377c2',
+  Pasture: '#bcbd22',
+  PermanentCrop: '#ff7f0e',
+  Residential: '#d62728',
+  River: '#17becf',
+  SeaLake: '#1f77b4'
+};
+
+const CLUSTER_COLORS = [
+  '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+  '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
+];
+
+export default function PcaView() {
+  const [data, setData] = useState(null);
+  const [colorMode, setColorMode] = useState('label'); // 'label' or 'cluster'
+  const [selectedPc, setSelectedPc] = useState('PC_1');
+  const [hoveredPoint, setHoveredPoint] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/pca?sample_size=2000')
+      .then(res => res.json())
+      .then(d => setData(d))
+      .catch(err => console.error(err));
+  }, []);
+
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Pre-calculate spatial activation map for selected PC
+  const pcInfo = data.loadings[selectedPc];
+  const spatialMatrix = Array(64).fill(0).map(() => Array(64).fill(0));
+  if (pcInfo?.top_loadings) {
+    pcInfo.top_loadings.forEach(item => {
+      spatialMatrix[item.row][item.col] = Math.max(spatialMatrix[item.row][item.col], item.abs_weight);
+    });
+  }
+
+  // Find min/max for 2D scatter bounds
+  const xVals = data.scatter_points.map(p => p.x);
+  const yVals = data.scatter_points.map(p => p.y);
+  const minX = Math.min(...xVals);
+  const maxX = Math.max(...xVals);
+  const minY = Math.min(...yVals);
+  const maxY = Math.max(...yVals);
+
+  return (
+    <div className="space-y-6">
+      {/* Top Variance Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-5 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl">
+          <p className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">PC1 Explained</p>
+          <h3 className="text-2xl font-bold text-white tracking-tight">{data.variance_pc1}%</h3>
+          <p className="text-xs text-blue-400 mt-1">Primary luminance vector</p>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl">
+          <p className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Top 2 PCs Combined</p>
+          <h3 className="text-2xl font-bold text-white tracking-tight">{data.variance_top2}%</h3>
+          <p className="text-xs text-emerald-400 mt-1">Majority scene variance</p>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl">
+          <p className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Total Fitted Components</p>
+          <h3 className="text-2xl font-bold text-white tracking-tight">{data.total_components}</h3>
+          <p className="text-xs text-slate-400 mt-1">Dimensionality reduced</p>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl">
+          <p className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Total Variance Retained</p>
+          <h3 className="text-2xl font-bold text-white tracking-tight">{data.variance_total}%</h3>
+          <p className="text-xs text-cyan-400 mt-1">Preserves dataset geometry</p>
+        </div>
+      </div>
+
+      {/* 2D PCA Interactive Scatter Canvas */}
+      <div className="p-6 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <h4 className="text-sm font-semibold text-white tracking-tight">Interactive 2D Principal Component Space</h4>
+            <p className="text-xs text-slate-400">Projection of EuroSAT patches onto PC1 vs PC2 (2,000 stratified points)</p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-400 font-medium">Color by:</span>
+            <div className="flex bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setColorMode('label')}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                  colorMode === 'label' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                True Class (Post-Hoc)
+              </button>
+              <button
+                onClick={() => setColorMode('cluster')}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                  colorMode === 'cluster' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                K-Means Cluster
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 2D Scatter Canvas Container */}
+        <div className="relative h-96 w-full bg-[#070B14] rounded-xl border border-slate-800/80 overflow-hidden flex items-center justify-center p-4">
+          <svg className="w-full h-full" viewBox={`0 0 800 450`}>
+            {/* Grid lines */}
+            <line x1="50" y1="225" x2="750" y2="225" stroke="#1E293B" strokeWidth="1" strokeDasharray="4 4" />
+            <line x1="400" y1="30" x2="400" y2="420" stroke="#1E293B" strokeWidth="1" strokeDasharray="4 4" />
+
+            {/* Scatter points */}
+            {data.scatter_points.map((p, idx) => {
+              const cx = 50 + ((p.x - minX) / (maxX - minX)) * 700;
+              const cy = 420 - ((p.y - minY) / (maxY - minY)) * 390;
+              const fill = colorMode === 'label' ? CLASS_COLORS[p.label] || '#3B82F6' : CLUSTER_COLORS[p.cluster % 10];
+
+              return (
+                <circle
+                  key={idx}
+                  cx={cx}
+                  cy={cy}
+                  r="3.5"
+                  fill={fill}
+                  opacity="0.75"
+                  className="hover:opacity-100 hover:scale-150 transition-all cursor-pointer"
+                  onMouseEnter={() => setHoveredPoint(p)}
+                  onMouseLeave={() => setHoveredPoint(null)}
+                />
+              );
+            })}
+          </svg>
+
+          {/* Hover Card */}
+          {hoveredPoint && (
+            <div className="absolute top-4 right-4 bg-slate-900/90 border border-slate-700/80 p-3 rounded-xl text-xs text-white shadow-2xl backdrop-blur-md">
+              <p className="font-semibold text-blue-400">{hoveredPoint.filename}</p>
+              <p className="text-slate-300">Class: <span className="text-white font-medium">{hoveredPoint.label}</span></p>
+              <p className="text-slate-300">Cluster: <span className="text-white font-medium">Cluster {hoveredPoint.cluster}</span></p>
+              <p className="text-slate-400 mt-1">PC1: {hoveredPoint.x} | PC2: {hoveredPoint.y}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-4 pt-4 border-t border-slate-800/60">
+          {colorMode === 'label' ? (
+            Object.entries(CLASS_COLORS).map(([name, color]) => (
+              <div key={name} className="flex items-center gap-1.5 text-xs text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }}></span>
+                <span>{name}</span>
+              </div>
+            ))
+          ) : (
+            CLUSTER_COLORS.map((color, idx) => (
+              <div key={idx} className="flex items-center gap-1.5 text-xs text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }}></span>
+                <span>Cluster {idx}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Spatial Feature Loadings & Scree Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Spatial Feature Loadings */}
+        <div className="p-6 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h4 className="text-sm font-semibold text-white tracking-tight">Spatial Pixel Loading Map (64×64)</h4>
+              <p className="text-xs text-slate-400">Pixel regions contributing highest absolute weight</p>
+            </div>
+
+            <select
+              value={selectedPc}
+              onChange={(e) => setSelectedPc(e.target.value)}
+              className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"
+            >
+              {Array.from({ length: 10 }).map((_, i) => (
+                <option key={i} value={`PC_${i + 1}`}>{`PC ${i + 1}`}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="w-48 h-48 bg-slate-950 rounded-xl border border-slate-800 p-2 flex items-center justify-center">
+              <svg viewBox="0 0 64 64" className="w-full h-full rounded">
+                {spatialMatrix.map((row, r) =>
+                  row.map((val, c) => (
+                    <rect
+                      key={`${r}-${c}`}
+                      x={c}
+                      y={r}
+                      width="1"
+                      height="1"
+                      fill={val > 0 ? `rgba(59, 130, 246, ${Math.min(1, val * 40)})` : '#070B14'}
+                    />
+                  ))
+                )}
+              </svg>
+            </div>
+
+            <div className="flex-1 space-y-2">
+              <div className="text-xs text-slate-300">
+                <p className="font-semibold text-white mb-1">{selectedPc} Weight Distribution</p>
+                <p className="text-slate-400 leading-relaxed">
+                  Individual Variance: <span className="text-blue-400 font-medium">{(pcInfo?.explained_variance_ratio * 100).toFixed(2)}%</span>
+                </p>
+                <p className="text-slate-400 leading-relaxed">
+                  Cumulative Variance: <span className="text-emerald-400 font-medium">{(pcInfo?.cumulative_variance_ratio * 100).toFixed(2)}%</span>
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-slate-800/80">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Channel Drivers:</span>
+                <div className="flex items-center gap-3 mt-1.5 text-xs">
+                  <span className="flex items-center gap-1 text-red-400"><span className="w-2 h-2 rounded-full bg-red-500"></span>Red</span>
+                  <span className="flex items-center gap-1 text-emerald-400"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>Green</span>
+                  <span className="flex items-center gap-1 text-blue-400"><span className="w-2 h-2 rounded-full bg-blue-500"></span>Blue</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scree Plot */}
+        <div className="p-6 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h4 className="text-sm font-semibold text-white tracking-tight">Scree Variance Decomposition</h4>
+              <p className="text-xs text-slate-400">Individual variance of top 30 principal components</p>
+            </div>
+          </div>
+
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.scree.slice(0, 30)}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+                <XAxis dataKey="component" stroke="#64748B" fontSize={10} />
+                <YAxis stroke="#64748B" fontSize={10} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                  formatter={(val) => [`${val.toFixed(2)}%`, 'Variance']}
+                />
+                <Area type="monotone" dataKey="variance" stroke="#10B981" strokeWidth={2} fill="#10B981" fillOpacity={0.2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
