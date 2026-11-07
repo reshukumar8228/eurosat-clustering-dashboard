@@ -105,15 +105,31 @@ def get_overview():
         for k, v in sorted(counts.items())
     ]
 
-    # 1 sample image per class
+    # Pre-seed 1 sample image per class and 12 samples for instant zero-latency gallery rendering
     sample_images = []
+    category_samples = {}
     for cls in label_names:
-        row = metadata_df[metadata_df["true_label"] == cls].iloc[0]
+        cat_df = metadata_df[metadata_df["true_label"] == cls]
+        first_row = cat_df.iloc[0]
         sample_images.append({
             "class": cls,
-            "filename": row["filename"],
-            "url": f"/static/data/{cls}/{row['filename']}"
+            "filename": first_row["filename"],
+            "url": f"/static/data/{cls}/{first_row['filename']}"
         })
+
+        # Pre-seed 12 samples per class for instant zero-latency gallery rendering
+        top12 = cat_df.head(12)
+        samples_list = []
+        for _, row in top12.iterrows():
+            idx_val = int(row["index"])
+            samples_list.append({
+                "index": idx_val,
+                "filename": row["filename"],
+                "category": cls,
+                "url": f"/static/data/{cls}/{row['filename']}",
+                "cluster_k10": int(labels_k10[idx_val])
+            })
+        category_samples[cls] = samples_list
 
     return {
         "total_images": len(metadata_df),
@@ -122,7 +138,38 @@ def get_overview():
         "features_per_image": 12288,
         "spectral_bands": 13,
         "class_breakdown": breakdown,
-        "sample_images": sample_images
+        "sample_images": sample_images,
+        "category_samples": category_samples
+    }
+
+
+@app.get("/api/category-samples")
+def get_category_samples(category: str = Query("Highway"), count: int = Query(12, ge=1, le=48)):
+    cat_df = metadata_df[metadata_df["true_label"] == category]
+    if len(cat_df) == 0:
+        return JSONResponse(status_code=404, content={"error": f"Category '{category}' not found"})
+
+    total_available = len(cat_df)
+    n_samples = min(count, total_available)
+    sampled_rows = cat_df.iloc[:n_samples]
+
+    samples = []
+    for _, row in sampled_rows.iterrows():
+        idx_val = int(row["index"])
+        samples.append({
+            "index": idx_val,
+            "filename": row["filename"],
+            "category": category,
+            "url": f"/static/data/{category}/{row['filename']}",
+            "cluster_k10": int(labels_k10[idx_val])
+        })
+
+    return {
+        "category": category,
+        "total_available": total_available,
+        "count": len(samples),
+        "color": CLASS_COLORS.get(category, "#3B82F6"),
+        "samples": samples
     }
 
 

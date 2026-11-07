@@ -52,3 +52,15 @@ def test_static_figures_exist():
         path = os.path.join(FIG_DIR, fig)
         assert os.path.exists(path), f"Missing figure: {fig}"
         assert os.path.getsize(path) > 1000, f"Figure too small: {fig}"
+
+def test_category_samples_data():
+    meta = pd.read_csv(os.path.join(OUTPUT_DIR, "metadata.csv"))
+    classes = meta["true_label"].unique()
+    assert len(classes) == 10
+    
+    # Check that Highway has samples and files exist
+    highway_samples = meta[meta["true_label"] == "Highway"]
+    assert len(highway_samples) >= 2000
+    for _, row in highway_samples.head(5).iterrows():
+        img_path = os.path.join("Data/EuroSAT", "Highway", row["filename"])
+        assert os.path.exists(img_path), f"Missing image file: {img_path}"
