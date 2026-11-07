@@ -31,10 +31,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Create required runtime directories
 RUN mkdir -p Data/EuroSAT uploads pipeline_outputs figures
 
-# Install Python dependencies with headless OpenCV (prevents GUI/GL errors)
+# Install Python dependencies with headless OpenCV
 COPY requirements.txt .
-RUN sed -i 's/opencv-python>=/opencv-python-headless>=/' requirements.txt && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application, models, and precomputed data
 COPY backend/ ./backend/
