@@ -320,6 +320,31 @@ if os.path.exists("frontend/dist"):
     app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
 
 
+def _launch_browser_when_ready(host="127.0.0.1", port=8000, timeout=30):
+    import time
+    import urllib.request
+    import webbrowser
+
+    target_url = f"http://localhost:{port}"
+    check_url = f"http://{host}:{port}/api/health"
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        try:
+            with urllib.request.urlopen(check_url, timeout=0.8) as resp:
+                if resp.status == 200:
+                    time.sleep(0.3)
+                    print(f"\n[EuroSAT Studio] Backend ready! Opening browser at {target_url}\n")
+                    webbrowser.open(target_url)
+                    return
+        except Exception:
+            time.sleep(0.3)
+    webbrowser.open(target_url)
+
+
 if __name__ == "__main__":
+    import threading
     import uvicorn
+
+    # Launch browser automatically only once the server is alive and responding
+    threading.Thread(target=_launch_browser_when_ready, daemon=True).start()
     uvicorn.run(app, host="0.0.0.0", port=8000)

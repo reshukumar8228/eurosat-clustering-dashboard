@@ -76,19 +76,12 @@ elif command -v fuser &>/dev/null; then
     fuser -k 8000/tcp 2>/dev/null || true
 fi
 
-# 6. Launch Browser & Server
+# 6. Launch Server & Browser
 echo ""
 echo "========================================================"
 echo "[4/4] Starting EuroSAT Studio on http://localhost:8000"
 echo "========================================================"
-echo "Dashboard will automatically open in your browser..."
+echo "Server is initializing... Browser will open automatically once ready."
 echo ""
-
-# Open browser in background
-if command -v xdg-open &>/dev/null; then
-    (sleep 1 && xdg-open "http://localhost:8000") &
-elif command -v open &>/dev/null; then
-    (sleep 1 && open "http://localhost:8000") &
-fi
 
 python backend/api.py

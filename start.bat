@@ -95,15 +95,14 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000" ^| findstr "LISTENING
     taskkill /F /PID %%a >nul 2>&1
 )
 
-:: 6. Launch Browser & Server
+:: 6. Launch Server & Browser
 echo.
 echo ========================================================
 echo [4/4] Starting EuroSAT Studio on http://localhost:8000
 echo ========================================================
-echo Dashboard will automatically open in your browser...
+echo Server is initializing... Browser will open automatically once ready.
 echo.
 
-start "" "http://localhost:8000"
 python backend\api.py
 
 pause
