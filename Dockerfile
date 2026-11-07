@@ -37,13 +37,19 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application, models, and precomputed data
 COPY backend/ ./backend/
-COPY classifier.py config.yaml ./
+COPY classifier.py pipeline_enhancements.py config.yaml ./
 COPY pipeline_outputs/ ./pipeline_outputs/
 COPY figures/ ./figures/
 COPY Data/ ./Data/
 
 # Copy built React frontend from Stage 1 into frontend/dist
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
+# Security: Create and switch to non-root user
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
 
 # Expose container port
 EXPOSE 8000

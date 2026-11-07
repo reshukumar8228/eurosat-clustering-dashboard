@@ -7,3 +7,5 @@ __pycache__
 frontend/node_modules
 Data/EuroSATallBands/
 pipeline_outputs/features_scaled.npy
+uploads/
+*.log

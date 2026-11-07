@@ -6,11 +6,16 @@ import os
 import sys
 import json
 import base64
+import logging
 import joblib
 import numpy as np
 import pandas as pd
 from PIL import Image
 import io
+
+# Setup structured logging
+logger = logging.getLogger("eurosat.api")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 # Ensure project root is in python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -24,16 +29,28 @@ from classifier import EuroSATClassifier
 
 app = FastAPI(title="EuroSAT Vision API", version="2.0")
 
+# Security: Configured origins instead of unrestricted wildcard with credentials
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:8000,http://127.0.0.1:8000,http://localhost:5173,http://127.0.0.1:5173"
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
 OUTPUT_DIR = "pipeline_outputs"
 DATA_DIR = "Data/EuroSAT"
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB maximum upload size
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}
 
 # Mount static directories
 os.makedirs("uploads", exist_ok=True)
@@ -44,14 +61,24 @@ app.mount("/static/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
 
 @app.get("/static/data/{category}/{filename}")
 def get_satellite_patch(category: str, filename: str):
-    """Serve satellite image patch with automatic fallback to prevent broken images."""
-    target = os.path.join(DATA_DIR, category, filename)
-    if os.path.exists(target):
+    """Serve satellite image patch with path traversal defense and fallback."""
+    # Sanitize path segments to prevent directory traversal
+    clean_category = os.path.basename(category.strip())
+    clean_filename = os.path.basename(filename.strip())
+
+    base_dir = os.path.realpath(DATA_DIR)
+    target = os.path.realpath(os.path.join(base_dir, clean_category, clean_filename))
+
+    # Path traversal check: target must be inside DATA_DIR
+    if not (target.startswith(base_dir + os.sep) or target == base_dir):
+        return JSONResponse(status_code=403, content={"error": "Access denied: Path traversal detected"})
+
+    if os.path.exists(target) and os.path.isfile(target):
         return FileResponse(target, media_type="image/jpeg")
 
     # Fallback to any representative sample patch in this category
-    cat_dir = os.path.join(DATA_DIR, category)
-    if os.path.exists(cat_dir):
+    cat_dir = os.path.realpath(os.path.join(base_dir, clean_category))
+    if cat_dir.startswith(base_dir + os.sep) and os.path.isdir(cat_dir):
         available = [f for f in os.listdir(cat_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
         if available:
             return FileResponse(os.path.join(cat_dir, available[0]), media_type="image/jpeg")
@@ -311,12 +338,32 @@ def get_clustering():
 async def predict_image(file: UploadFile = File(None), preset_path: str = Form(None)):
     try:
         if file is not None:
+            filename = file.filename or "uploaded.jpg"
+            ext = os.path.splitext(filename)[1].lower()
+            if ext and ext not in ALLOWED_EXTENSIONS:
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": f"Unsupported format '{ext}'. Allowed: {', '.join(sorted(ALLOWED_EXTENSIONS))}"}
+                )
+
             contents = await file.read()
+            if len(contents) > MAX_FILE_SIZE:
+                return JSONResponse(status_code=413, content={"error": "Uploaded image exceeds 10MB size limit"})
+
+            # Prevent decompression bomb attacks
+            Image.MAX_IMAGE_PIXELS = 10_000_000
+
             img = Image.open(io.BytesIO(contents)).convert("RGB")
-            source_name = file.filename
+            source_name = os.path.basename(filename)
         elif preset_path:
-            img = Image.open(preset_path).convert("RGB")
-            source_name = os.path.basename(preset_path)
+            base_dir = os.path.realpath(DATA_DIR)
+            resolved_preset = os.path.realpath(preset_path)
+            # Strictly ensure preset_path stays inside DATA_DIR
+            if not (resolved_preset.startswith(base_dir + os.sep) and os.path.isfile(resolved_preset)):
+                return JSONResponse(status_code=400, content={"error": "Invalid or unauthorized preset path"})
+
+            img = Image.open(resolved_preset).convert("RGB")
+            source_name = os.path.basename(resolved_preset)
         else:
             return JSONResponse(status_code=400, content={"error": "No image provided"})
 
@@ -341,11 +388,12 @@ async def predict_image(file: UploadFile = File(None), preset_path: str = Form(N
         neighbors_formatted = []
         for n in res["nearest_neighbors"]:
             rel_path = n["filepath"].replace("\\", "/").split("Data/EuroSAT/")[-1]
+            clean_rel = "/".join(os.path.basename(seg) for seg in rel_path.split("/") if seg and seg != "..")
             neighbors_formatted.append({
                 "filename": n["filename"],
                 "true_label": n["true_label"],
                 "distance": round(float(n["distance"]), 2),
-                "url": f"/static/data/{rel_path}"
+                "url": f"/static/data/{clean_rel}"
             })
 
         # Base64 thumbnail for instant preview
@@ -381,7 +429,8 @@ async def predict_image(file: UploadFile = File(None), preset_path: str = Form(N
             }
         }
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        logger.error("Error during image inference: %s", str(e), exc_info=True)
+        return JSONResponse(status_code=500, content={"error": "Failed to process image inference. Please ensure the file is a valid image patch."})
 
 
 # Mount built React frontend distribution (Vision UI)
@@ -414,6 +463,9 @@ if __name__ == "__main__":
     import threading
     import uvicorn
 
+    host = os.getenv("HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", "8000"))
+
     # Launch browser automatically only once the server is alive and responding
-    threading.Thread(target=_launch_browser_when_ready, daemon=True).start()
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    threading.Thread(target=_launch_browser_when_ready, args=(host, port), daemon=True).start()
+    uvicorn.run(app, host=host, port=port)

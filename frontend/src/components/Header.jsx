@@ -1,4 +1,3 @@
-import React from 'react';
 import { Search, ShieldCheck } from 'lucide-react';
 
 export default function Header({ activeTab }) {

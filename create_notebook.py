@@ -3,6 +3,9 @@ Generate the analysis_notebook.ipynb file.
 """
 
 import json
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 cells = [
     {
@@ -275,4 +278,4 @@ notebook = {
 with open("d:\\Projects\\EuroSAT_Project\\analysis_notebook.ipynb", "w", encoding="utf-8") as f:
     json.dump(notebook, f, indent=2)
 
-print("Created analysis_notebook.ipynb successfully.")
+logging.info("Created analysis_notebook.ipynb successfully.")

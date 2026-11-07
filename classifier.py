@@ -7,14 +7,14 @@ from PIL import Image
 
 class EuroSATClassifier:
     """Inference engine to classify newly uploaded satellite patches based on unsupervised cluster structure."""
-    def __init__(self, scaler, pca_model, kmeans_model, cluster_mapping, nn_model, metadata_df, pca_coords):
+    def __init__(self, scaler, pca_model, kmeans_model, cluster_mapping, nn_model, **kwargs):
         self.scaler = scaler
         self.pca_model = pca_model
         self.kmeans_model = kmeans_model
         self.cluster_mapping = cluster_mapping
         self.nn_model = nn_model
-        self.metadata_df = metadata_df
-        self.pca_coords = pca_coords
+        self.metadata_df = kwargs.get("metadata_df")
+        self.pca_coords = kwargs.get("pca_coords")
 
     def predict(self, image_input):
         """

@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function RadialGauge({ title, subtitle, value, max = 100, unit = '%', footerText }) {
   const percentage = Math.min(100, Math.max(0, (value / max) * 100));
   const strokeDashoffset = 251.2 - (251.2 * percentage) / 100;

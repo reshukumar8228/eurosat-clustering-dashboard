@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function MetricCard({ title, value, change, icon: Icon, pillColor = 'blue' }) {
   const colorMap = {
     blue: 'bg-blue-600 text-white shadow-blue-500/30',
