@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Download, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 export default function ReportView() {
   const downloadFile = (url, filename) => {

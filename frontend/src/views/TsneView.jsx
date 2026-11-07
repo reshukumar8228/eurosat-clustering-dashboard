@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GitGraph, Sliders, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 const CLASS_COLORS = {
   AnnualCrop: '#2ca02c',

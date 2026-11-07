@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Hexagon, CheckCircle2, TrendingUp, Grid, ShieldAlert } from 'lucide-react';
 import { 
   LineChart, 
   Line, 
@@ -7,9 +6,7 @@ import {
   YAxis, 
   Tooltip, 
   ResponsiveContainer, 
-  CartesianGrid,
-  BarChart,
-  Bar
+  CartesianGrid
 } from 'recharts';
 
 export default function ClusteringView() {

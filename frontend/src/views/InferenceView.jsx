@@ -1,13 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { 
   UploadCloud, 
-  CheckCircle2, 
-  HelpCircle, 
-  ArrowRight, 
-  Layers, 
-  Image as ImageIcon,
-  Compass,
-  Cpu
+  ArrowRight
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -20,7 +14,6 @@ import {
 } from 'recharts';
 
 export default function InferenceView() {
-  const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -38,7 +31,6 @@ export default function InferenceView() {
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) {
-      setFile(selected);
       setPreviewUrl(URL.createObjectURL(selected));
       runPrediction(selected, null);
     }
@@ -48,14 +40,12 @@ export default function InferenceView() {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const dropped = e.dataTransfer.files[0];
-      setFile(dropped);
       setPreviewUrl(URL.createObjectURL(dropped));
       runPrediction(dropped, null);
     }
   };
 
   const handlePresetSelect = (presetPath) => {
-    setFile(null);
     setPreviewUrl(null);
     runPrediction(null, presetPath);
   };

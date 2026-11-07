@@ -5,13 +5,9 @@ import {
   Cpu, 
   Radio, 
   ArrowRight, 
-  CheckCircle2, 
   Sparkles,
-  RefreshCw,
   Eye,
-  X,
-  ExternalLink,
-  Image as ImageIcon
+  X
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -58,22 +54,10 @@ export default function OverviewView({ setActiveTab }) {
       .catch(err => console.error("Error loading PCA data:", err));
   }, []);
 
-  // Sync category whenever selectedClass changes
+  // Fetch fresh category samples whenever selectedClass changes
   useEffect(() => {
     if (!selectedClass || selectedClass === 'all') return;
 
-    if (data?.category_samples?.[selectedClass]) {
-      const classItem = data.class_breakdown?.find(b => b.name === selectedClass);
-      setCategoryData({
-        category: selectedClass,
-        total_available: classItem?.count || 2500,
-        count: data.category_samples[selectedClass].length,
-        color: classItem?.color || '#3B82F6',
-        samples: data.category_samples[selectedClass]
-      });
-    }
-
-    // Attempt to load fresh samples from backend if available
     fetch(`/api/category-samples?category=${encodeURIComponent(selectedClass)}&count=12`)
       .then(res => res.ok ? res.json() : null)
       .then(d => {
@@ -84,7 +68,7 @@ export default function OverviewView({ setActiveTab }) {
       .catch(() => {
         // Silently use pre-seeded data
       });
-  }, [selectedClass, data]);
+  }, [selectedClass]);
 
   if (!data) {
     return (

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Layers, Activity, Eye, Sliders } from 'lucide-react';
 import { 
   AreaChart, 
   Area, 

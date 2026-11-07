@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Bell, Settings, ShieldCheck } from 'lucide-react';
+import { Search, ShieldCheck } from 'lucide-react';
 
 export default function Header({ activeTab }) {
   const titles = {

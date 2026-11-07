@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Radio, Layers, CheckCircle2, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { 
   LineChart, 
   Line, 
