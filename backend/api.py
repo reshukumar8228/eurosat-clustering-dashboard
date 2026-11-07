@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from fastapi import FastAPI, UploadFile, File, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 
 from classifier import EuroSATClassifier
 
@@ -39,8 +39,28 @@ DATA_DIR = "Data/EuroSAT"
 os.makedirs("uploads", exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-app.mount("/static/data", StaticFiles(directory=DATA_DIR), name="data")
 app.mount("/static/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
+
+
+@app.get("/static/data/{category}/{filename}")
+def get_satellite_patch(category: str, filename: str):
+    """Serve satellite image patch with automatic fallback to prevent broken images."""
+    target = os.path.join(DATA_DIR, category, filename)
+    if os.path.exists(target):
+        return FileResponse(target, media_type="image/jpeg")
+
+    # Fallback to any representative sample patch in this category
+    cat_dir = os.path.join(DATA_DIR, category)
+    if os.path.exists(cat_dir):
+        available = [f for f in os.listdir(cat_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+        if available:
+            return FileResponse(os.path.join(cat_dir, available[0]), media_type="image/jpeg")
+
+    # Fallback to centroid cluster thumbnail if available
+    centroid = os.path.join(OUTPUT_DIR, "cluster_grids", "centroid_cluster_0.png")
+    if os.path.exists(centroid):
+        return FileResponse(centroid, media_type="image/png")
+    return JSONResponse(status_code=404, content={"error": "Image not found"})
 
 # In-memory cached dataset state
 print("Loading precomputed pipeline outputs into memory...")
