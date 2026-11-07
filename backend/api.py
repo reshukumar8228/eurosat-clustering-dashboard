@@ -24,6 +24,9 @@ from fastapi import FastAPI, UploadFile, File, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
+from pydantic import BaseModel, Field
+from sklearn.cluster import KMeans as KMeansModel
+from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
 
 from classifier import EuroSATClassifier
 
@@ -113,6 +116,23 @@ with open(os.path.join(OUTPUT_DIR, "cluster_label_mapping.json")) as f:
     cluster_mapping = json.load(f)
 contingency_df = pd.read_csv(os.path.join(OUTPUT_DIR, "kmeans_k10_contingency.csv"), index_col=0)
 labels_k10 = np.load(os.path.join(OUTPUT_DIR, "kmeans_labels_k10.npy"))
+
+pca_reduced_full = np.load(os.path.join(OUTPUT_DIR, "pca_reduced_95.npy"))
+
+kmeans_labels_cache = {}
+kmeans_models_cache = {}
+models_dir = os.path.join(OUTPUT_DIR, "kmeans_models")
+if os.path.exists(models_dir):
+    for k_file in os.listdir(models_dir):
+        if k_file.endswith(".pkl") and k_file.startswith("kmeans_k"):
+            try:
+                k_val = int(k_file.replace("kmeans_k", "").replace(".pkl", ""))
+                kmeans_models_cache[k_val] = joblib.load(os.path.join(models_dir, k_file))
+                label_path = os.path.join(OUTPUT_DIR, f"kmeans_labels_k{k_val}.npy")
+                if os.path.exists(label_path):
+                    kmeans_labels_cache[k_val] = np.load(label_path)
+            except Exception as e:
+                logger.warning("Failed loading kmeans model %s: %s", k_file, e)
 
 umap_2d = None
 if os.path.exists(os.path.join(OUTPUT_DIR, "umap_2d.npy")):
@@ -431,6 +451,149 @@ async def predict_image(file: UploadFile = File(None), preset_path: str = Form(N
     except Exception as e:
         logger.error("Error during image inference: %s", str(e), exc_info=True)
         return JSONResponse(status_code=500, content={"error": "Failed to process image inference. Please ensure the file is a valid image patch."})
+
+
+class ExperimentParams(BaseModel):
+    pca_components: int = Field(default=220, ge=2, le=220)
+    pca_axis_x: int = Field(default=1, ge=1, le=220)
+    pca_axis_y: int = Field(default=2, ge=1, le=220)
+    kmeans_k: int = Field(default=10, ge=2, le=30)
+    tsne_perplexity: int = Field(default=30)
+    sample_size: int = Field(default=2000, ge=500, le=5000)
+
+
+@app.post("/api/experiment")
+def run_experiment(params: ExperimentParams):
+    import time as _time
+    t_start = _time.time()
+
+    n_comp = params.pca_components
+    ax_x = params.pca_axis_x - 1
+    ax_y = params.pca_axis_y - 1
+
+    if ax_x >= pca_reduced_full.shape[1]:
+        ax_x = 0
+    if ax_y >= pca_reduced_full.shape[1]:
+        ax_y = 1
+
+    # --- PCA Section ---
+    pca_subset = pca_reduced_full[:, :n_comp]
+    cum_var = np.cumsum(exp_var[:n_comp])
+    variance_retained = float(cum_var[-1] * 100) if len(cum_var) > 0 else 0.0
+
+    scree_data = [
+        {
+            "component": i + 1,
+            "variance": round(float(exp_var[i] * 100), 2),
+            "cumulative": round(float(np.cumsum(exp_var)[i] * 100), 2)
+        }
+        for i in range(min(50, len(exp_var)))
+    ]
+
+    # --- K-Means Section ---
+    k = params.kmeans_k
+    is_precomputed = (n_comp == 220) and (k in kmeans_labels_cache)
+    km_time_start = _time.time()
+
+    if is_precomputed:
+        cluster_labels = kmeans_labels_cache[k]
+        km_model = kmeans_models_cache[k]
+        cached_metric = kmeans_metrics.get(str(k), {})
+        inertia_val = float(cached_metric.get("inertia", getattr(km_model, "inertia_", 0.0)))
+        sil_val = float(cached_metric.get("silhouette", 0.0))
+        db_val = float(cached_metric.get("davies_bouldin", 0.0))
+        ch_val = float(cached_metric.get("calinski_harabasz", 0.0))
+    else:
+        # Live recomputation on the retained PCA components
+        km_model = KMeansModel(n_clusters=k, random_state=42, n_init=5 if n_comp < 50 else 10)
+        cluster_labels = km_model.fit_predict(pca_subset)
+        inertia_val = float(km_model.inertia_)
+
+        eval_idx = np.random.RandomState(42).choice(
+            len(pca_subset), size=min(3000, len(pca_subset)), replace=False
+        )
+        eval_X = pca_subset[eval_idx]
+        eval_labels = cluster_labels[eval_idx]
+
+        sil_val = float(silhouette_score(eval_X, eval_labels))
+        db_val = float(davies_bouldin_score(eval_X, eval_labels))
+        ch_val = float(calinski_harabasz_score(eval_X, eval_labels))
+
+    km_time_ms = round((_time.time() - km_time_start) * 1000, 1)
+
+    # Cluster sizes
+    unique, counts = np.unique(cluster_labels, return_counts=True)
+    cluster_sizes = [{"cluster": int(u), "size": int(c)} for u, c in zip(unique, counts)]
+
+    # --- PCA Scatter Points ---
+    step = max(1, len(subset_indices) // params.sample_size)
+    sampled_idx = subset_indices[::step]
+
+    pca_points = []
+    for idx in sampled_idx:
+        row = metadata_df.iloc[idx]
+        pca_points.append({
+            "x": round(float(pca_reduced_full[idx, ax_x]), 2),
+            "y": round(float(pca_reduced_full[idx, ax_y]), 2),
+            "label": row["true_label"],
+            "cluster": int(cluster_labels[idx]),
+            "filename": row["filename"]
+        })
+
+    # --- t-SNE Section ---
+    p_str = str(params.tsne_perplexity)
+    if p_str not in tsne_embeddings:
+        p_str = "30"
+    emb = tsne_embeddings[p_str]
+    step_t = 2
+    sampled_t = list(range(0, len(subset_indices), step_t))
+
+    tsne_points = []
+    for i in sampled_t:
+        idx = subset_indices[i]
+        row = metadata_df.iloc[idx]
+        tsne_points.append({
+            "x": round(float(emb[i, 0]), 2),
+            "y": round(float(emb[i, 1]), 2),
+            "label": row["true_label"],
+            "cluster": int(cluster_labels[idx]),
+            "filename": row["filename"]
+        })
+
+    tsne_info = tsne_params.get(f"perp_{p_str}", {})
+
+    total_ms = round((_time.time() - t_start) * 1000, 1)
+
+    return {
+        "pca": {
+            "variance_retained": round(variance_retained, 2),
+            "components_used": n_comp,
+            "axis_x": params.pca_axis_x,
+            "axis_y": params.pca_axis_y,
+            "scatter_points": pca_points,
+            "scree": scree_data
+        },
+        "kmeans": {
+            "k": k,
+            "inertia": round(inertia_val, 1),
+            "silhouette": round(sil_val, 4),
+            "davies_bouldin": round(db_val, 4),
+            "calinski_harabasz": round(ch_val, 1),
+            "is_precomputed": is_precomputed,
+            "cluster_sizes": cluster_sizes,
+            "computation_time_ms": km_time_ms
+        },
+        "tsne": {
+            "perplexity": int(p_str),
+            "kl_divergence": round(float(tsne_info.get("kl_divergence", 0.0)), 4),
+            "scatter_points": tsne_points
+        },
+        "comparison": {
+            "total_samples": len(metadata_df),
+            "subset_size": len(subset_indices),
+            "computation_time_ms": total_ms
+        }
+    }
 
 
 # Mount built React frontend distribution (Vision UI)

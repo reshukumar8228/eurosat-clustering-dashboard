@@ -8,6 +8,7 @@ import ClusteringView from './views/ClusteringView';
 import InferenceView from './views/InferenceView';
 import SpectralView from './views/SpectralView';
 import ReportView from './views/ReportView';
+import ExperimentBenchView from './views/ExperimentBenchView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -22,6 +23,8 @@ export default function App() {
         return <TsneView />;
       case 'clustering':
         return <ClusteringView />;
+      case 'experiment':
+        return <ExperimentBenchView />;
       case 'inference':
         return <InferenceView />;
       case 'spectral':

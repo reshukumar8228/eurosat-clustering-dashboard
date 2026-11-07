@@ -6,6 +6,7 @@ export default function Header({ activeTab }) {
     pca: 'Principal Component Analysis (PCA)',
     tsne: 't-SNE Manifold Learning',
     clustering: 'K-Means Clustering Analysis',
+    experiment: 'Experiment Bench — Parameter Playground',
     inference: 'Satellite Patch Inference Engine',
     spectral: 'Multi-Spectral Band Analysis',
     report: 'Study Report & Ethical Governance'
