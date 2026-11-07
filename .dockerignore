@@ -1,0 +1,9 @@
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+frontend/node_modules
+Data/EuroSAT/*/*.jpg
+Data/EuroSATallBands/*/*.tif
+pipeline_outputs/features_scaled.npy
