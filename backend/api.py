@@ -37,6 +37,8 @@ DATA_DIR = "Data/EuroSAT"
 
 # Mount static directories
 os.makedirs("uploads", exist_ok=True)
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 app.mount("/static/data", StaticFiles(directory=DATA_DIR), name="data")
 app.mount("/static/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
 
