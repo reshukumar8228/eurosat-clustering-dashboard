@@ -40,7 +40,7 @@ COPY backend/ ./backend/
 COPY classifier.py config.yaml ./
 COPY pipeline_outputs/ ./pipeline_outputs/
 COPY figures/ ./figures/
-COPY Data/EuroSAT/ ./Data/EuroSAT/
+COPY Data/ ./Data/
 
 # Copy built React frontend from Stage 1 into frontend/dist
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
