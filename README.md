@@ -3,7 +3,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Dataset](https://img.shields.io/badge/dataset-EuroSAT%20(Sentinel--2)-orange.svg)](https://github.com/phelber/eurosat)
-[![Streamlit Dashboard](https://img.shields.io/badge/dashboard-Streamlit-red.svg)](https://streamlit.io/)
+[![Modern React Dashboard](https://img.shields.io/badge/dashboard-React%20%2B%20FastAPI-blue.svg)](http://localhost:8000)
 
 ---
 
@@ -11,7 +11,7 @@
 
 Remote sensing imagery from satellite constellations provides crucial data for environmental monitoring, urban development, and disaster management. However, manual annotation of vast satellite archives is labor-intensive and error-prone. This project presents a rigorous, reproducible unsupervised learning framework for grouping 27,000 multi-spectral and RGB Sentinel-2 satellite image patches from the **EuroSAT** benchmark into natural land-cover categories without utilizing ground truth labels during feature modeling.
 
-We evaluate linear dimensionality reduction via **Principal Component Analysis (PCA)**, non-linear manifold projection via **t-Distributed Stochastic Neighbor Embedding (t-SNE)** across a spectrum of perplexities ($p \in [5, 100]$), and **Uniform Manifold Approximation and Projection (UMAP)**. Unsupervised **K-Means clustering** ($k \in [2, 20]$) identifies broad environmental archetypes. Finally, an interactive multi-page **Streamlit dashboard** enables dynamic exploration, cluster inspections, and real-time image upload inference with nearest-neighbor retrieval.
+We evaluate linear dimensionality reduction via **Principal Component Analysis (PCA)**, non-linear manifold projection via **t-Distributed Stochastic Neighbor Embedding (t-SNE)** across a spectrum of perplexities ($p \in [5, 100]$), and **Uniform Manifold Approximation and Projection (UMAP)**. Unsupervised **K-Means clustering** ($k \in [2, 20]$) identifies broad environmental archetypes. Finally, an interactive **React + FastAPI Vision UI dashboard** enables dynamic exploration, cluster inspections, and real-time image upload inference with nearest-neighbor retrieval.
 
 ---
 
@@ -36,7 +36,7 @@ We evaluate linear dimensionality reduction via **Principal Component Analysis (
 | **(A) Data Preparation** | Scaled 27,000 EuroSAT 64×64 RGB patches (12,288 flattened features) via `StandardScaler`; ground-truth annotations hidden during modeling. | ✅ Complete |
 | **(B) Dimensionality Reduction** | Fitted Randomized PCA capturing >90% variance; multi-perplexity t-SNE ($p \in \{5, 15, 30, 50, 100\}$); UMAP comparison. | ✅ Complete |
 | **(C) Unsupervised Grouping** | K-Means clustering across $k \in [2, 20]$; evaluated via Inertia, Silhouette Score, Davies-Bouldin, Calinski-Harabasz, ARI, and NMI. | ✅ Complete |
-| **(D) Interactive Dashboard** | 7-page Streamlit application with interactive Plotly scatterplots, exemplar grids, and live upload inference engine. | ✅ Complete |
+| **(D) Interactive Dashboard** | Modern Vision UI dashboard in React 19 + Tailwind CSS + FastAPI with interactive Plotly scatterplots, exemplar grids, and live upload inference engine. | ✅ Complete |
 
 ---
 
@@ -52,12 +52,16 @@ EuroSAT_Project/
 ├── pytest.ini                       # Pytest testpath configuration
 ├── pipeline.py                      # End-to-end unsupervised pipeline (Stages 1–6)
 ├── classifier.py                    # Inference engine & nearest-neighbor retriever
-├── dashboard.py                     # 7-page interactive Streamlit dashboard
+├── backend/
+│   └── api.py                       # High-performance FastAPI service & static server
+├── frontend/
+│   ├── src/                         # React 19 components & Vision UI dashboard views
+│   └── dist/                        # Optimized production frontend bundle
 ├── generate_figures.py              # Publication-quality static figure generator
 ├── create_notebook.py               # Notebook generator script
 ├── analysis_notebook.ipynb          # Self-contained Jupyter research notebook
-├── run_dashboard.bat                # Streamlit launcher
-├── start.bat                        # Modern React + FastAPI 1-click launcher
+├── start.bat                        # Modern React + FastAPI 1-click Windows launcher
+├── start.sh                         # Linux / macOS automated launcher
 ├── pipeline_outputs/                # Pre-computed arrays, models, and metrics
 │   ├── features_scaled.npy          # Standardized feature matrix (27,000 × 12,288)
 │   ├── metadata.csv                 # Dataset manifest with post-hoc evaluation labels
@@ -164,9 +168,7 @@ chmod +x start.sh && ./start.sh
 4. **Model Verification:** Checks precomputed PCA, t-SNE, and K-Means models in `pipeline_outputs/` (auto-runs `pipeline.py` if absent).
 5. **Pre-Built Frontend Serving:** Serves the modern React + Tailwind CSS dashboard from `frontend/dist/` (zero Node.js or npm requirement for end users).
 6. **Port Collision Safeguard:** Automatically detects and frees port 8000 if an old instance is running.
-7. **Browser Auto-Launch:** Automatically opens **http://localhost:8000** in the default browser.
-
-*(Alternative Streamlit dashboard is also available via `run_dashboard.bat`).*
+7. **Synchronized Browser Launch:** Probes backend health and automatically opens **http://localhost:8000** in the default browser the instant the server is ready.
 
 ---
 
