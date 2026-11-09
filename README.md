@@ -1,4 +1,4 @@
-# 🛰️ Unsupervised Land-Type Grouping of Satellite Image Patches Using Clustering
+# Unsupervised Land-Type Grouping of Satellite Image Patches Using Clustering
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -7,7 +7,7 @@
 
 ---
 
-## 📖 Abstract
+## Abstract
 
 Remote sensing imagery from satellite constellations provides crucial data for environmental monitoring, urban development, and disaster management. However, manual annotation of vast satellite archives is labor-intensive and error-prone. This project presents a rigorous, reproducible unsupervised learning framework for grouping 27,000 multi-spectral and RGB Sentinel-2 satellite image patches from the **EuroSAT** benchmark into natural land-cover categories without utilizing ground truth labels during feature modeling.
 
@@ -15,32 +15,32 @@ We evaluate linear dimensionality reduction via **Principal Component Analysis (
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [Overview & Objectives](#-overview--objectives)
-- [Project Architecture](#-project-architecture)
-- [Mathematical Methodology](#-mathematical-methodology)
-- [Key Empirical Findings](#-key-empirical-findings)
-- [Installation & Quickstart](#-installation--quickstart)
-- [Interactive Dashboard Guide](#-interactive-dashboard-guide)
-- [Limitations & Ethical Considerations](#-limitations--ethical-considerations)
-- [Unit Testing & Verification](#-unit-testing--verification)
-- [Citation & References](#-citation--references)
+- [Overview & Objectives](#overview--objectives)
+- [Project Architecture](#project-architecture)
+- [Mathematical Methodology](#mathematical-methodology)
+- [Key Empirical Findings](#key-empirical-findings)
+- [Installation & Quickstart](#installation--quickstart)
+- [Interactive Dashboard Guide](#interactive-dashboard-guide)
+- [Limitations & Ethical Considerations](#limitations--ethical-considerations)
+- [Unit Testing & Verification](#unit-testing--verification)
+- [References & Acknowledgments](#references--acknowledgments)
 
 ---
 
-## 🎯 Overview & Objectives
+## Overview & Objectives
 
 | Objective | Description | Status |
 |---|---|:---:|
-| **(A) Data Preparation** | Scaled 27,000 EuroSAT 64×64 RGB patches (12,288 flattened features) via `StandardScaler`; ground-truth annotations hidden during modeling. | ✅ Complete |
-| **(B) Dimensionality Reduction** | Fitted Randomized PCA capturing >90% variance; multi-perplexity t-SNE ($p \in \{5, 15, 30, 50, 100\}$); UMAP comparison. | ✅ Complete |
-| **(C) Unsupervised Grouping** | K-Means clustering across $k \in [2, 20]$; evaluated via Inertia, Silhouette Score, Davies-Bouldin, Calinski-Harabasz, ARI, and NMI. | ✅ Complete |
-| **(D) Interactive Dashboard** | Modern Vision UI dashboard in React 19 + Tailwind CSS + FastAPI with interactive Plotly scatterplots, exemplar grids, and live upload inference engine. | ✅ Complete |
+| **(A) Data Preparation** | Scaled 27,000 EuroSAT 64×64 RGB patches (12,288 flattened features) via `StandardScaler`; ground-truth annotations hidden during modeling. | Complete |
+| **(B) Dimensionality Reduction** | Fitted Randomized PCA capturing >90% variance; multi-perplexity t-SNE ($p \in \{5, 15, 30, 50, 100\}$); UMAP comparison. | Complete |
+| **(C) Unsupervised Grouping** | K-Means clustering across $k \in [2, 20]$; evaluated via Inertia, Silhouette Score, Davies-Bouldin, Calinski-Harabasz, ARI, and NMI. | Complete |
+| **(D) Interactive Dashboard** | Modern Vision UI dashboard in React 19 + Tailwind CSS + FastAPI with interactive Plotly scatterplots, exemplar grids, and live upload inference engine. | Complete |
 
 ---
 
-## 🗂️ Project Architecture
+## Project Architecture
 
 ```
 EuroSAT_Project/
@@ -97,7 +97,7 @@ EuroSAT_Project/
 
 ---
 
-## 📐 Mathematical Methodology
+## Mathematical Methodology
 
 ### 1. Principal Component Analysis (PCA)
 Given standardized centered matrix $\mathbf{X} \in \mathbb{R}^{N \times D}$ where $D = 12,288$:
@@ -126,7 +126,7 @@ $$J = \sum_{k=1}^K \sum_{\mathbf{x} \in S_k} \|\mathbf{x} - \boldsymbol{\mu}_k\|
 
 ---
 
-## 📊 Key Empirical Findings
+## Key Empirical Findings
 
 1. **Spectral Coherence in Low Dimensions:** The first two principal components capture **65.30%** of total variance, reflecting overall scene luminance and red-vs-green vegetative contrast.
 2. **Natural Grouping Regime ($k=4$ to $k=6$):** The Elbow curve and Calinski-Harabasz index indicate natural separation into 4 major macro-classes:
@@ -139,7 +139,7 @@ $$J = \sum_{k=1}^K \sum_{\mathbf{x} \in S_k} \|\mathbf{x} - \boldsymbol{\mu}_k\|
 
 ---
 
-## 🚀 Installation & Quickstart
+## Installation & Quickstart
 
 ### Prerequisites
 - Python 3.10+ (tested on Python 3.13)
@@ -172,21 +172,21 @@ chmod +x start.sh && ./start.sh
 
 ---
 
-## 🖥️ Interactive Dashboard Guide
+## Interactive Dashboard Guide
 
 The dashboard is structured into 7 functional pages accessible from the sidebar:
 
-1. **🏠 Overview & Dataset Explorer:** High-level project metrics, interactive class distribution bar chart, class breakdown table, and 8-patch preview gallery.
-2. **📊 PCA Variance & Loadings:** Scree plot, cumulative variance slider, interactive 2D PCA scatter (smooth 5k or full 27k points), and spatial 64×64 pixel importance activation heatmaps.
-3. **🔮 t-SNE Parameter Sensitivity:** Slider to toggle between perplexities 5, 15, 30, 50, and 100 with live KL divergence indicators and side-by-side comparative grid.
-4. **🎯 K-Means Clustering Deep-Dive:** 4 evaluation metric curves ($k=2$ to $20$), $k=10$ confusion contingency matrix, per-cluster purity bar chart, and 4×4 exemplar patches closest to cluster centroids.
-5. **🔍 Image Upload & Classification:** Drag-and-drop satellite patch uploader or EuroSAT preset selector. Detects predicted cluster, mapped land cover category, purity confidence, centroid distance bar chart, top-5 nearest neighbor historical patches, and highlights position on 2D PCA manifold with a star marker.
-6. **📈 Comparative Analysis & Spectral:** Method comparison matrix (PCA vs t-SNE vs UMAP), interactive UMAP 2D scatter, and 13-band Sentinel-2 multi-spectral signature profiles.
-7. **📝 Research Report & Governance:** Formatted study report, ethical bias documentation, and download buttons for report markdown, metrics JSON, and contingency CSV.
+1. **Overview & Dataset Explorer:** High-level project metrics, interactive class distribution bar chart, class breakdown table, and 8-patch preview gallery.
+2. **PCA Variance & Loadings:** Scree plot, cumulative variance slider, interactive 2D PCA scatter (smooth 5k or full 27k points), and spatial 64×64 pixel importance activation heatmaps.
+3. **t-SNE Parameter Sensitivity:** Slider to toggle between perplexities 5, 15, 30, 50, and 100 with live KL divergence indicators and side-by-side comparative grid.
+4. **K-Means Clustering Deep-Dive:** 4 evaluation metric curves ($k=2$ to $20$), $k=10$ confusion contingency matrix, per-cluster purity bar chart, and 4×4 exemplar patches closest to cluster centroids.
+5. **Image Upload & Classification:** Drag-and-drop satellite patch uploader or EuroSAT preset selector. Detects predicted cluster, mapped land cover category, purity confidence, centroid distance bar chart, top-5 nearest neighbor historical patches, and highlights position on 2D PCA manifold with a star marker.
+6. **Comparative Analysis & Spectral:** Method comparison matrix (PCA vs t-SNE vs UMAP), interactive UMAP 2D scatter, and 13-band Sentinel-2 multi-spectral signature profiles.
+7. **Research Report & Governance:** Formatted study report, ethical bias documentation, and download buttons for report markdown, metrics JSON, and contingency CSV.
 
 ---
 
-## ⚖️ Limitations & Ethical Considerations
+## Limitations & Ethical Considerations
 
 - **European Geographic Bias:** EuroSAT exclusively covers European territory. Applying models directly to tropical, equatorial, or hyper-arid terrain will suffer performance degradation due to differing soil composition and vegetation seasonality.
 - **Spatial Resolution Restrictions:** At 10m Ground Sample Distance (GSD), each 64×64 patch spans 640m × 640m. Mixed-pixel phenomena frequently occur where waterways or roadways bisect agricultural or residential zones.
@@ -195,17 +195,17 @@ The dashboard is structured into 7 functional pages accessible from the sidebar:
 
 ---
 
-## 🧪 Unit Testing & Verification
+## Unit Testing & Verification
 
 Comprehensive unit test suites verify data integrity, array shapes, and classifier inference:
 ```bash
 python -m pytest tests/ -v
 ```
-**Results:** `10 passed in 3.97s` ✅
+**Results:** `10 passed in 3.97s`
 
 ---
 
-## 📚 References & Acknowledgments
+## References & Acknowledgments
 
 - Helber, P., Bischke, B., Dengel, A., & Borth, D. (2019). *EuroSAT: A Novel Dataset and Deep Learning Benchmark for Land Use and Land Cover Classification.* IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing.
 - Copernicus Open Access Hub / European Space Agency (ESA) Sentinel-2 mission.

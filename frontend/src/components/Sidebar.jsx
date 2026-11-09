@@ -7,8 +7,7 @@ import {
   UploadCloud, 
   Radio, 
   FileText,
-  Database,
-  Cpu
+  Satellite
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab }) {
@@ -26,10 +25,10 @@ export default function Sidebar({ activeTab, setActiveTab }) {
   return (
     <aside className="w-64 min-h-screen bg-[#070B14]/95 border-r border-slate-800/80 flex flex-col justify-between p-5 select-none shrink-0">
       <div>
-        {/* Brand Header - Clean typography without logo/emojis */}
+        {/* Brand Header */}
         <div className="flex items-center gap-3 px-2 py-3 mb-6">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <Cpu className="w-5 h-5 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-md shadow-blue-500/10">
+            <Satellite className="w-5 h-5" />
           </div>
           <div>
             <h1 className="text-sm font-bold tracking-wider text-white uppercase">EuroSAT Studio</h1>
@@ -42,7 +41,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           Core Workflows
         </div>
 
-        <nav className="space-y-1.5">
+        <nav className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -50,34 +49,39 @@ export default function Sidebar({ activeTab, setActiveTab }) {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                className={`w-full flex items-center gap-3.5 px-3 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-600/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                 }`}
               >
-                <div className={`p-1.5 rounded-lg ${isActive ? 'bg-white/20' : 'bg-slate-800/80 text-blue-400'}`}>
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-900/90 border border-slate-800/80 text-blue-400'
+                  }`}
+                >
                   <Icon className="w-4 h-4" />
                 </div>
-                <span>{item.label}</span>
+                <span className={isActive ? 'font-semibold text-white' : ''}>{item.label}</span>
               </button>
             );
           })}
         </nav>
       </div>
 
-      {/* Dataset Specs Floating Card (Vision UI style) */}
-      <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-950/40 via-slate-900/60 to-indigo-950/40 border border-blue-500/20 shadow-xl backdrop-blur-md">
-        <div className="flex items-center gap-2 mb-2">
-          <Database className="w-4 h-4 text-blue-400" />
-          <span className="text-xs font-semibold text-white">Sentinel-2 Registry</span>
+      {/* Dataset Specs Footer */}
+      <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
+        <div className="text-xs font-semibold text-white mb-1.5">
+          Sentinel-2 Registry
         </div>
         <p className="text-[11px] text-slate-400 leading-relaxed mb-3">
           27,000 multi-spectral and RGB patches loaded with ground-truth labels isolated for post-hoc analysis.
         </p>
-        <div className="flex items-center justify-between text-[11px] font-medium text-blue-400 bg-blue-500/10 px-2.5 py-1.5 rounded-lg border border-blue-500/20">
+        <div className="flex items-center justify-between text-[11px] font-medium text-slate-300 bg-slate-800/70 px-2.5 py-1.5 rounded-lg border border-slate-700/60">
           <span>Engine Status</span>
-          <span className="text-emerald-400">Online</span>
+          <span className="text-emerald-400 font-semibold">Online</span>
         </div>
       </div>
     </aside>

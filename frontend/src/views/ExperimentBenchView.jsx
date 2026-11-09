@@ -9,16 +9,6 @@ import {
   CartesianGrid,
   Cell
 } from 'recharts';
-import {
-  FlaskConical,
-  Zap,
-  Play,
-  RotateCcw,
-  Sliders,
-  Layers,
-  Sparkles,
-  Info
-} from 'lucide-react';
 import ParameterSlider from '../components/ParameterSlider';
 
 const CLASS_COLORS = {
@@ -149,22 +139,17 @@ export default function ExperimentBenchView() {
   return (
     <div className="space-y-6">
       {/* Top Banner / Explanation */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-950/40 via-indigo-950/30 to-slate-900/60 border border-blue-500/20 backdrop-blur-xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-            <FlaskConical className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              Experiment Bench
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400">
-                Interactive Playground
-              </span>
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Tune PCA dimensionality, K-Means clustering partitions, and t-SNE projection manifolds in real-time.
-            </p>
-          </div>
+      <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            Experiment Bench
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400">
+              Interactive Playground
+            </span>
+          </h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Tune PCA dimensionality, K-Means clustering partitions, and t-SNE projection manifolds in real-time.
+          </p>
         </div>
 
         {/* Quick Presets */}
@@ -209,16 +194,12 @@ export default function ExperimentBenchView() {
         <div className="lg:col-span-4 space-y-5">
           <div className="p-5 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
-              <div className="flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-blue-400" />
-                <h4 className="text-sm font-bold text-white tracking-tight">Hyperparameter Controls</h4>
-              </div>
+              <h4 className="text-sm font-bold text-white tracking-tight">Hyperparameter Controls</h4>
               <button
                 onClick={resetDefaults}
-                className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
+                className="text-[11px] text-slate-400 hover:text-white transition-colors"
                 title="Reset to defaults"
               >
-                <RotateCcw className="w-3 h-3" />
                 Reset
               </button>
             </div>
@@ -227,22 +208,16 @@ export default function ExperimentBenchView() {
             <button
               onClick={() => runExperiment()}
               disabled={loading}
-              className={`w-full py-2.5 px-4 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-lg ${
+              className={`w-full py-2.5 px-4 rounded-xl font-semibold text-xs flex items-center justify-center transition-all shadow-lg ${
                 hasChanges
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/30 ring-2 ring-blue-500/50 animate-pulse'
                   : 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-600/20'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Computing Models...</span>
-                </>
+                <span>Computing Models...</span>
               ) : (
-                <>
-                  <Play className="w-4 h-4 fill-current" />
-                  <span>{hasChanges ? 'Apply & Run Experiment' : 'Re-run Experiment'}</span>
-                </>
+                <span>{hasChanges ? 'Apply & Run Experiment' : 'Re-run Experiment'}</span>
               )}
             </button>
 
@@ -313,12 +288,12 @@ export default function ExperimentBenchView() {
                   </span>
                   <div className="flex items-center gap-1.5">
                     {isPrecomputedK ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                        <Zap className="w-2.5 h-2.5" /> Instant
+                      <span className="inline-flex items-center text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                        Precomputed
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                        <Sparkles className="w-2.5 h-2.5" /> Live Fit
+                      <span className="inline-flex items-center text-[10px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                        Live Fit
                       </span>
                     )}
                     <span className="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 tabular-nums">
@@ -422,8 +397,8 @@ export default function ExperimentBenchView() {
               <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Computation</p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 {data?.kmeans?.is_precomputed ? (
-                  <span className="text-base font-bold text-emerald-400 flex items-center gap-1">
-                    <Zap className="w-3.5 h-3.5" /> Instant
+                  <span className="text-base font-bold text-emerald-400">
+                    Precomputed
                   </span>
                 ) : (
                   <span className="text-base font-bold text-amber-400 tabular-nums">
@@ -441,8 +416,7 @@ export default function ExperimentBenchView() {
           <div className="p-6 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h4 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-blue-400" />
+                <h4 className="text-sm font-bold text-white tracking-tight">
                   Dual Manifold Projection Space
                 </h4>
                 <p className="text-xs text-slate-400">
@@ -676,8 +650,7 @@ export default function ExperimentBenchView() {
           )}
 
           {/* Methodology Guidance Card */}
-          <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-500/20 flex items-start gap-3 text-xs text-blue-200">
-            <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+          <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-500/20 text-xs text-blue-200">
             <div className="space-y-1">
               <span className="font-bold text-blue-300">How to interpret this bench: </span>
               <p className="text-slate-300 leading-relaxed">

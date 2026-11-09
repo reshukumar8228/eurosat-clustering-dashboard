@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Download } from 'lucide-react';
 
 export default function ReportView() {
   const [metrics, setMetrics] = useState({
@@ -49,17 +48,15 @@ export default function ReportView() {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => downloadFile('/static/outputs/kmeans_metrics.json', 'kmeans_metrics.json')}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs font-semibold text-white transition-all shadow-md"
+            className="px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs font-semibold text-white transition-all shadow-md"
           >
-            <Download className="w-3.5 h-3.5 text-blue-400" />
-            <span>Metrics JSON</span>
+            Metrics JSON
           </button>
           <button
             onClick={() => downloadFile('/static/outputs/kmeans_k10_contingency.csv', 'contingency_matrix.csv')}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-all shadow-lg shadow-blue-500/25"
+            className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-all shadow-md shadow-blue-500/25"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Contingency CSV</span>
+            Contingency CSV
           </button>
         </div>
       </div>

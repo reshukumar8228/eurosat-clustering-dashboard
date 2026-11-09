@@ -12,7 +12,7 @@ cells = [
         "cell_type": "markdown",
         "metadata": {},
         "source": [
-            "# 🛰️ Unsupervised Land-Type Grouping of Satellite Image Patches Using Clustering\n",
+            "# Unsupervised Land-Type Grouping of Satellite Image Patches Using Clustering\n",
             "**EuroSAT Sentinel-2 Satellite Dataset**\n",
             "\n",
             "### Project Objectives\n",

@@ -143,7 +143,7 @@ def generate_dashboard_mockup():
     # Header bar
     plt.subplot2grid((6, 4), (0, 0), colspan=4)
     plt.axis('off')
-    plt.text(0.02, 0.6, "🛰️ EuroSAT Studio - Vision UI Remote Sensing Dashboard", 
+    plt.text(0.02, 0.6, "EuroSAT Studio - Vision UI Remote Sensing Dashboard", 
              fontsize=14, fontweight='bold', color='white')
     plt.text(0.02, 0.2, "Unsupervised Satellite Land-Cover Grouping | Sentinel-2 Benchmark | 27,000 Verified Patches", 
              fontsize=10, color='#94A3B8')

@@ -1,9 +1,9 @@
-# 🛰️ EuroSAT Unsupervised Land-Type Grouping
+# EuroSAT Unsupervised Land-Type Grouping
 ### Comprehensive Walkthrough for New & Non-Technical Users, Visual Guide & Future Roadmap
 
 ---
 
-## 1. 🌟 The 30-Second Plain-English Pitch
+## 1. The 30-Second Plain-English Pitch
 
 > *"Imagine an astronaut takes 27,000 satellite photos of Europe from space, but nobody has the time to manually label every single river, farm, and city. Can an AI look at all these photos and sort them into neat piles all by itself without being told what’s in them?"*
 
@@ -15,7 +15,7 @@ We built an end-to-end Machine Learning pipeline and an interactive web dashboar
 
 ---
 
-## 2. 🧩 The Non-Technical Analogy: How It Works
+## 2. The Non-Technical Analogy: How It Works
 
 If you have never studied Data Science or Machine Learning, here is the mental model to understand the entire project:
 
@@ -45,11 +45,11 @@ If you have never studied Data Science or Machine Learning, here is the mental m
 
 ---
 
-## 3. 🗺️ Step-by-Step Project Pipeline: From Space to Screen
+## 3. Step-by-Step Project Pipeline: From Space to Screen
 
 ```mermaid
 flowchart TD
-    A["🛰️ Sentinel-2 Satellite\n(27,000 64×64 Patches)"] --> B["Stage 1: Standardization & Preprocessing\n(12,288 Features, Labels Hidden)"]
+    A["Sentinel-2 Satellite\n(27,000 64×64 Patches)"] --> B["Stage 1: Standardization & Preprocessing\n(12,288 Features, Labels Hidden)"]
     B --> C["Stage 2: PCA Dimensionality Reduction\n(220 PCs capture >90% variance)"]
     B --> D["Stage 3: Multi-Perplexity t-SNE & UMAP\n(Non-linear 2D Manifolds)"]
     C --> E["Stage 4: K-Means Clustering\n(k = 2 to 20 Evaluation)"]
@@ -60,47 +60,47 @@ flowchart TD
     G --> H
 ```
 
-### 🛰️ Stage 1: Data Preparation & Feature Extraction
+### Stage 1: Data Preparation & Feature Extraction
 * **Source:** The **EuroSAT benchmark**, featuring 27,000 Sentinel-2 satellite image patches covering 34 European countries.
 * **Resolution:** $64 \times 64$ pixels with a 10-meter Ground Sample Distance (each image covers an area of $640\text{ m} \times 640\text{ m}$ on Earth).
 * **Feature Dimension:** $64 \times 64 \times 3 = 12,288$ continuous pixel values standardized using zero-mean unit-variance scaling (`StandardScaler`).
 * **The Rule of Unsupervised Learning:** Ground-truth class names (`Forest`, `River`, `SeaLake`, etc.) were **completely hidden** during training so the AI could not "cheat".
 
-### 📐 Stage 2: Dimensionality Reduction via PCA
+### Stage 2: Dimensionality Reduction via PCA
 * **Randomized Singular Value Decomposition (SVD):** Decomposes the centered data matrix $\mathbf{X} = \mathbf{U} \mathbf{\Sigma} \mathbf{V}^T$.
 * **Compression Ratio:** 12,288 input dimensions compressed down to **220 orthogonal principal components**, achieving a **55.8-fold parameter reduction** while preserving $>95\%$ of all empirical visual variance.
 * **Dominant Variance:** The first **2 principal components** capture **65.30% of total variance** across the entire dataset.
 
-### 🔮 Stage 3: Manifold Projection (t-SNE & UMAP)
+### Stage 3: Manifold Projection (t-SNE & UMAP)
 * Projects high-dimensional feature points onto 2D coordinate spaces using the Student-t kernel to capture non-linear local neighborhood similarities.
 * Evaluates perplexity across a spectrum: $p \in \{5, 15, 30, 50, 100\}$.
 
-### 🎯 Stage 4: K-Means Clustering
+### Stage 4: K-Means Clustering
 * Tests cluster counts from $k = 2$ up to $k = 20$.
 * Evaluated rigorously using intrinsic metrics (Inertia, Silhouette Score, Davies-Bouldin, Calinski-Harabasz) and post-hoc validation (Adjusted Rand Index, Normalized Mutual Information).
 
-### 🔍 Stage 5 & 6: Interactive Vision Engine & Multi-Spectral Analysis
+### Stage 5 & 6: Interactive Vision Engine & Multi-Spectral Analysis
 * Serialized into an inference engine ([`classifier.py`](classifier.py)) supporting instant image uploads, nearest neighbor retrieval, and full 13-band Sentinel-2 spectral inspection.
 
 ---
 
-## 4. 📊 Detailed Tour of Every Screen, View, and Graph
+## 4. Detailed Tour of Every Screen, View, and Graph
 
 When you open the web application at `http://localhost:8000`, the sidebar provides access to **7 comprehensive modules**:
 
 ```
 +------------------------------------------------------------------------------------+
-| 🛰️ EuroSAT Studio                                                                  |
+| EuroSAT Studio                                                                     |
 +------------------------------------------------------------------------------------+
-| [🏠 1. Overview]        [📊 2. PCA Explorer]       [🔮 3. t-SNE Manifold]          |
-| [🎯 4. K-Means Deep-Dive] [🔍 5. Live Inference]   [📈 6. Spectral & UMAP]         |
-| [📝 7. Study Report]                                                               |
+| [1. Overview]        [2. PCA Explorer]       [3. t-SNE Manifold]                   |
+| [4. K-Means Deep-Dive] [5. Live Inference]   [6. Spectral & UMAP]                  |
+| [7. Study Report]                                                                  |
 +------------------------------------------------------------------------------------+
 ```
 
 ---
 
-### View 1: 🏠 Overview & Dataset Explorer
+### View 1: Overview & Dataset Explorer
 
 ![EuroSAT Dataset Balanced Class Distribution](figures/class_distribution.png)
 
@@ -126,7 +126,7 @@ When you open the web application at `http://localhost:8000`, the sidebar provid
 
 ---
 
-### View 2: 📊 PCA Variance & Spatial Loadings
+### View 2: PCA Variance & Spatial Loadings
 
 ![PCA Explained Variance Progression](figures/pca_variance.png)
 
@@ -154,7 +154,7 @@ When you open the web application at `http://localhost:8000`, the sidebar provid
 
 ---
 
-### View 3: 🔮 t-SNE Parameter Sensitivity
+### View 3: t-SNE Parameter Sensitivity
 
 ![t-SNE Parameter Sensitivity Across Perplexities](figures/tsne_comparison.png)
 
@@ -181,7 +181,7 @@ When you open the web application at `http://localhost:8000`, the sidebar provid
 
 ---
 
-### View 4: 🎯 K-Means Clustering Deep-Dive
+### View 4: K-Means Clustering Deep-Dive
 
 ![K-Means Elbow Inertia Curve](figures/elbow_curve.png)
 
@@ -220,13 +220,13 @@ When you open the web application at `http://localhost:8000`, the sidebar provid
 
 ---
 
-### View 5: 🔍 Live Image Upload & Classification Support
+### View 5: Live Image Upload & Classification Support
 
 ![Inference Engine Architecture](figures/inference_workflow.png)
 
 ```
 +------------------------------------------------------------------------------------+
-| 📥 Upload Satellite Image (or Pick EuroSAT Preset)                                 |
+| Upload Satellite Image (or Pick EuroSAT Preset)                                    |
 | [ Drag & Drop File ]  or  [ Preset: Highway | Forest | River | SeaLake | ... ]     |
 +------------------------------------------------------------------------------------+
 | Prediction Results:                  | Historical Top-5 Nearest Neighbors:         |
@@ -236,9 +236,9 @@ When you open the web application at `http://localhost:8000`, the sidebar provid
 | • Physical Stats: Brightness 42.1    | 4. Pasture_112.jpg  (Distance: 3.10) [IMG]  |
 |                   Roughness 18.4     | 5. Forest_541.jpg   (Distance: 3.22) [IMG]  |
 +------------------------------------------------------------------------------------+
-| Centroid Distance Bar Chart          | Manifold Star Location                      |
+| Centroid Distance Bar Chart          | Manifold Marker Location                    |
 | Cl 1: [██████████] (Nearest)         |       PC2 ^                                 |
-| Cl 5: [████████████████]             |           |       ★ (Your Upload Here)      |
+| Cl 5: [████████████████]             |           |       * (Your Upload Here)      |
 | Cl 0: [████████████████████████]     |           +-------------------> PC1         |
 +------------------------------------------------------------------------------------+
 ```
@@ -248,13 +248,13 @@ When you open the web application at `http://localhost:8000`, the sidebar provid
 2. **Real-Time Classification Card:** Instantly reports the assigned cluster, mapped land cover category, confidence score, and physical attributes (average brightness, surface roughness, RGB balance).
 3. **Centroid Distances:** A bar chart comparing distances to all 10 cluster centers.
 4. **Top-5 Nearest Neighbors Gallery:** Displays the 5 closest historical images from the 27,000-image dataset, including their filenames and similarity scores.
-5. **PCA Manifold Locator:** Plots a bright **gold star (★)** on the 2D map showing exactly where your uploaded image falls relative to the entire dataset.
+5. **PCA Manifold Locator:** Plots a target marker on the 2D map showing exactly where your uploaded image falls relative to the entire dataset.
 
 > **Non-Technical Explanation:** *"Drop in any satellite photo, and the system instantly compares it to 27,000 European landscapes, marks its location on the map, and retrieves the 5 most visually similar historical sites."*
 
 ---
 
-### View 6: 📈 Spectral & Multi-Manifold Analysis
+### View 6: Spectral & Multi-Manifold Analysis
 
 ![13-Band Multi-Spectral Profiles](figures/spectral_signature_plot.png)
 
@@ -285,7 +285,7 @@ When you open the web application at `http://localhost:8000`, the sidebar provid
 
 ---
 
-### View 7: 📝 Study Report, Governance & Data Exports
+### View 7: Study Report, Governance & Data Exports
 
 #### What It Shows:
 1. Complete academic report covering methodology, findings, and ethical considerations (such as geographic bias toward temperate Europe and mixed-pixel effects at 10-meter resolution).
@@ -293,7 +293,7 @@ When you open the web application at `http://localhost:8000`, the sidebar provid
 
 ---
 
-## 5. 🚀 Zero-Setup Execution (How Any User Runs It)
+## 5. Zero-Setup Execution (How Any User Runs It)
 
 Running this project requires no complex environment setup or manual terminal commands:
 
@@ -331,7 +331,7 @@ sequenceDiagram
 
 ---
 
-## 6. 💡 Recommended Next Steps: How to Elevate the Project
+## 6. Recommended Next Steps: How to Elevate the Project
 
 While the current pipeline is fully functional and rigorously validated, here are **6 high-impact extensions** to elevate it to production grade:
 
@@ -397,7 +397,7 @@ While the current pipeline is fully functional and rigorously validated, here ar
 
 ---
 
-## 7. 📚 Summary Reference Table
+## 7. Summary Reference Table
 
 | Feature / Question | Project Implementation | Non-Technical Takeaway |
 |---|---|---|

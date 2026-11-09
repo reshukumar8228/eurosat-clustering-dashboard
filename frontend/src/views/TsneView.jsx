@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { AlertTriangle } from 'lucide-react';
 
 const CLASS_COLORS = {
   AnnualCrop: '#2ca02c',
@@ -211,8 +210,7 @@ export default function TsneView() {
       </div>
 
       {/* Critical Caution Card */}
-      <div className="p-5 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-start gap-3.5 text-xs text-amber-200">
-        <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+      <div className="p-5 rounded-2xl bg-amber-950/20 border border-amber-500/30 text-xs text-amber-200">
         <div>
           <span className="font-bold text-amber-300">Non-Metric Projection Caution: </span>
           Distances between isolated clusters in t-SNE projections do not correlate linearly with physical Euclidean distance. The scale of clusters is influenced by probability density equalization rather than physical patch diameter.

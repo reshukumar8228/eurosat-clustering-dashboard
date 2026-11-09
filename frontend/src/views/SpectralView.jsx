@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Info } from 'lucide-react';
 import { 
   LineChart, 
   Line, 
@@ -119,8 +118,7 @@ export default function SpectralView() {
       </div>
 
       {/* Remote Sensing Scientific Note */}
-      <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-start gap-3.5 text-xs text-slate-300">
-        <Info className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+      <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300">
         <div>
           <span className="font-bold text-white">Why Spectral Bands Matter: </span>
           In pure RGB color space, dark water (`River`) and shaded roadways (`Highway`) overlap significantly. In the Near-Infrared (B8, B8A) and SWIR (B11, B12) channels, water exhibits near-total radiation absorption, creating distinct separation from asphalt and bare soils.

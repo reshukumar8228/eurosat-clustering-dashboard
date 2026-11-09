@@ -1,11 +1,5 @@
 import { useState, useRef } from 'react';
 import { 
-  UploadCloud, 
-  ArrowRight,
-  AlertCircle,
-  AlertTriangle
-} from 'lucide-react';
-import { 
   BarChart, 
   Bar, 
   XAxis, 
@@ -114,9 +108,6 @@ export default function InferenceView() {
             className="hidden"
           />
 
-          <div className="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-            <UploadCloud className="w-7 h-7 text-blue-400" />
-          </div>
           <h4 className="text-sm font-semibold text-white mb-1">
             Drag & drop satellite patch, or <span className="text-blue-400">browse</span>
           </h4>
@@ -139,7 +130,7 @@ export default function InferenceView() {
                   className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium bg-slate-900/60 border border-slate-800 hover:border-blue-500/40 hover:bg-slate-800/60 text-slate-300 hover:text-white transition-all text-left"
                 >
                   <span>{p.name}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="text-slate-500 text-[10px]">Select</span>
                 </button>
               ))}
             </div>
@@ -151,7 +142,7 @@ export default function InferenceView() {
       {error && (
         <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-start justify-between gap-3 text-xs animate-in fade-in">
           <div className="flex items-start gap-2.5">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
+            <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0 mt-1.5" />
             <div>
               <p className="font-semibold text-white">Inference Message</p>
               <p className="mt-0.5 text-rose-300/90 leading-relaxed">{error}</p>
@@ -291,8 +282,8 @@ export default function InferenceView() {
                       ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
                       : "bg-cyan-500/10 border-cyan-500/30 text-cyan-300"
                   }`}>
-                    <AlertTriangle className={`w-4 h-4 shrink-0 mt-0.5 ${
-                      result.is_out_of_distribution ? "text-rose-400" : "text-cyan-400"
+                    <span className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${
+                      result.is_out_of_distribution ? "bg-rose-400" : "bg-cyan-400"
                     }`} />
                     <span className="leading-relaxed">{result.supervised_semantic.domain_note}</span>
                   </div>
