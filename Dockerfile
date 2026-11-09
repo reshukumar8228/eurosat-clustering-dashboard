@@ -37,7 +37,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application, models, and precomputed data
 COPY backend/ ./backend/
-COPY classifier.py pipeline_enhancements.py config.yaml ./
+COPY classifier.py features.py pipeline.py pipeline_enhancements.py config.yaml ./
 COPY pipeline_outputs/ ./pipeline_outputs/
 COPY figures/ ./figures/
 COPY Data/ ./Data/
