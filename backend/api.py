@@ -145,7 +145,11 @@ classifier: EuroSATClassifier = joblib.load(os.path.join(OUTPUT_DIR, "classifier
 supervised_clf = None
 sup_path = os.path.join(OUTPUT_DIR, "supervised_classifier.pkl")
 if os.path.exists(sup_path):
-    supervised_clf = joblib.load(sup_path)
+    try:
+        supervised_clf = joblib.load(sup_path)
+    except Exception as e:
+        logger.warning("Optional supervised classifier could not be loaded: %s", e)
+        supervised_clf = None
 
 label_names = sorted(metadata_df["true_label"].unique())
 
