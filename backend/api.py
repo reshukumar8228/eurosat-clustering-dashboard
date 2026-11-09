@@ -29,6 +29,7 @@ from sklearn.cluster import KMeans as KMeansModel
 from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
 
 from classifier import EuroSATClassifier
+from features import extract_rich_features, align_image_illumination, detect_non_satellite
 
 app = FastAPI(title="EuroSAT Vision API", version="2.0")
 
@@ -52,8 +53,8 @@ app.add_middleware(
 
 OUTPUT_DIR = "pipeline_outputs"
 DATA_DIR = "Data/EuroSAT"
-MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB maximum upload size
-ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}
+MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB maximum upload size
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp", ".bmp", ".jfif", ".avif"}
 
 # Mount static directories
 os.makedirs("uploads", exist_ok=True)
@@ -357,7 +358,19 @@ def get_clustering():
 @app.post("/api/predict")
 async def predict_image(file: UploadFile = File(None), preset_path: str = Form(None)):
     try:
-        if file is not None:
+        is_upload = (
+            file is not None 
+            and not isinstance(file, type(File(None))) 
+            and hasattr(file, "filename") 
+            and bool(file.filename)
+        )
+        has_preset = (
+            preset_path is not None 
+            and not isinstance(preset_path, type(Form(None))) 
+            and bool(preset_path.strip())
+        )
+
+        if is_upload:
             filename = file.filename or "uploaded.jpg"
             ext = os.path.splitext(filename)[1].lower()
             if ext and ext not in ALLOWED_EXTENSIONS:
@@ -366,16 +379,60 @@ async def predict_image(file: UploadFile = File(None), preset_path: str = Form(N
                     content={"error": f"Unsupported format '{ext}'. Allowed: {', '.join(sorted(ALLOWED_EXTENSIONS))}"}
                 )
 
-            contents = await file.read()
+            # Read contents safely without deadlocks in anyio/starlette threads
+            if hasattr(file, "file") and hasattr(file.file, "read"):
+                contents = file.file.read()
+            elif hasattr(file, "read"):
+                contents = await file.read() if asyncio.iscoroutinefunction(file.read) else file.read()
+            else:
+                contents = b""
             if len(contents) > MAX_FILE_SIZE:
-                return JSONResponse(status_code=413, content={"error": "Uploaded image exceeds 10MB size limit"})
+                return JSONResponse(status_code=413, content={"error": "Uploaded image exceeds 25MB size limit"})
 
             # Prevent decompression bomb attacks
-            Image.MAX_IMAGE_PIXELS = 10_000_000
+            Image.MAX_IMAGE_PIXELS = 50_000_000
 
-            img = Image.open(io.BytesIO(contents)).convert("RGB")
+            # Robust multi-format image decoding
+            img = None
+            try:
+                raw_img = Image.open(io.BytesIO(contents))
+                img = raw_img.convert("RGB")
+            except Exception as pil_err:
+                # Fallback for multi-band TIF (e.g., Sentinel-2 13-band TIFF)
+                try:
+                    import tifffile
+                    arr = tifffile.imread(io.BytesIO(contents))
+                    if arr.ndim == 3 and arr.shape[2] >= 3:
+                        if arr.shape[2] == 13:
+                            # Sentinel-2 B4(Red)=3, B3(Green)=2, B2(Blue)=1
+                            rgb_arr = arr[:, :, [3, 2, 1]].astype(np.float32)
+                        else:
+                            rgb_arr = arr[:, :, :3].astype(np.float32)
+                        min_v, max_v = float(rgb_arr.min()), float(rgb_arr.max())
+                        if max_v > min_v:
+                            rgb_arr = (rgb_arr - min_v) / (max_v - min_v) * 255.0
+                        img = Image.fromarray(rgb_arr.astype(np.uint8))
+                    elif arr.ndim == 2:
+                        min_v, max_v = float(arr.min()), float(arr.max())
+                        norm = (arr - min_v) / (max_v - min_v + 1e-5) * 255.0
+                        img = Image.fromarray(norm.astype(np.uint8)).convert("RGB")
+                    else:
+                        raise pil_err
+                except Exception:
+                    # Final fallback to OpenCV
+                    try:
+                        import cv2
+                        nparr = np.frombuffer(contents, np.uint8)
+                        cv_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                        if cv_img is not None:
+                            img = Image.fromarray(cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB))
+                        else:
+                            raise pil_err
+                    except Exception:
+                        raise pil_err
+
             source_name = os.path.basename(filename)
-        elif preset_path:
+        elif has_preset:
             base_dir = os.path.realpath(DATA_DIR)
             resolved_preset = os.path.realpath(preset_path)
             # Strictly ensure preset_path stays inside DATA_DIR
@@ -387,32 +444,52 @@ async def predict_image(file: UploadFile = File(None), preset_path: str = Form(N
         else:
             return JSONResponse(status_code=400, content={"error": "No image provided"})
 
-        # Run inference via EuroSATClassifier
-        res = classifier.predict(img)
+        if img is None:
+            return JSONResponse(status_code=400, content={"error": "Could not decode uploaded image"})
 
-        # Supervised classification prediction (if trained)
+        # Align illumination for external images whose camera/sensor exposure differs
+        img_aligned = align_image_illumination(img)
+
+        # Run inference via EuroSATClassifier
+        res = classifier.predict(img_aligned)
+
+        # Supervised classification prediction with multi-scale feature support
         supervised_prediction = None
         supervised_probs = None
+        supervised_confidence = None
         if supervised_clf is not None:
-            img_resized = img.resize((64, 64), Image.Resampling.BILINEAR)
+            img_resized = img_aligned.resize((64, 64), Image.Resampling.BILINEAR)
             flat = np.array(img_resized, dtype=np.float32).reshape(1, -1)
             scaled = classifier.scaler.transform(flat)
             pca_feat = classifier.pca_model.transform(scaled)
-            pred_id = int(supervised_clf.predict(pca_feat)[0])
+
+            n_in = getattr(supervised_clf, "n_features_in_", 220)
+            if n_in == 244:
+                rich_feat = np.array([extract_rich_features(img_aligned)], dtype=np.float32)
+                eval_feat = np.hstack([pca_feat, rich_feat])
+            else:
+                eval_feat = pca_feat
+
+            pred_id = int(supervised_clf.predict(eval_feat)[0])
             supervised_prediction = label_names[pred_id]
             if hasattr(supervised_clf, "predict_proba"):
-                probs = supervised_clf.predict_proba(pca_feat)[0]
+                probs = supervised_clf.predict_proba(eval_feat)[0]
                 supervised_probs = {label_names[i]: round(float(probs[i]) * 100, 1) for i in range(len(label_names))}
+                supervised_confidence = round(float(probs[pred_id]) * 100, 1)
 
         # Format nearest neighbors with web-accessible URLs
         neighbors_formatted = []
-        for n in res["nearest_neighbors"]:
+        min_neighbor_dist = float("inf")
+        for n in res.get("nearest_neighbors", []):
+            dist_val = round(float(n["distance"]), 2)
+            if dist_val < min_neighbor_dist:
+                min_neighbor_dist = dist_val
             rel_path = n["filepath"].replace("\\", "/").split("Data/EuroSAT/")[-1]
             clean_rel = "/".join(os.path.basename(seg) for seg in rel_path.split("/") if seg and seg != "..")
             neighbors_formatted.append({
                 "filename": n["filename"],
                 "true_label": n["true_label"],
-                "distance": round(float(n["distance"]), 2),
+                "distance": dist_val,
                 "url": f"/static/data/{clean_rel}"
             })
 
@@ -421,13 +498,35 @@ async def predict_image(file: UploadFile = File(None), preset_path: str = Form(N
         img.resize((128, 128)).save(buffered, format="JPEG")
         img_b64 = "data:image/jpeg;base64," + base64.b64encode(buffered.getvalue()).decode()
 
+        # Outlier / Domain-shift & Non-Satellite (OOD) assessment
+        is_ood, ood_score, ood_min_dist, ood_reasons = detect_non_satellite(
+            img, classifier.scaler, classifier.pca_model, classifier.nn_model
+        )
+
+        if is_ood:
+            supervised_prediction = "Unrecognized (Non-Satellite Image)"
+            supervised_confidence = 0.0
+            supervised_probs = {"Unrecognized / Non-Satellite": 100.0}
+            reasons_msg = "; ".join(ood_reasons) if ood_reasons else f"Euclidean distance ({min_neighbor_dist:.1f}) exceeds valid terrain manifold"
+            domain_note = f"Non-Satellite Image Detected: This image does not match any recognized EuroSAT Earth observation land-cover categories ({reasons_msg}). The model cannot reliably categorize non-satellite imagery."
+            cluster_mapped_label = "No Satellite Match (Out of Distribution)"
+            cluster_purity = 0.0
+        else:
+            cluster_mapped_label = res["majority_label"]
+            cluster_purity = round(res["confidence_purity"] * 100, 1)
+            is_outlier = min_neighbor_dist > 30.0
+            domain_note = None
+            if is_outlier:
+                domain_note = "External / Cross-Sensor Patch: Resolution and spectral response diverge from EuroSAT Sentinel-2 baseline. Classification leverages spatial structural and texture heuristics."
+
         return {
             "source_name": source_name,
             "thumbnail_b64": img_b64,
+            "is_out_of_distribution": is_ood,
             "unsupervised": {
                 "predicted_cluster": res["predicted_cluster"],
-                "mapped_label": res["majority_label"],
-                "purity_confidence": round(res["confidence_purity"] * 100, 1),
+                "mapped_label": cluster_mapped_label,
+                "purity_confidence": cluster_purity,
                 "cluster_size": res["cluster_size"],
                 "centroid_distances": [
                     {"cluster": k, "distance": round(v, 2)}
@@ -435,22 +534,28 @@ async def predict_image(file: UploadFile = File(None), preset_path: str = Form(N
                 ]
             },
             "supervised_semantic": {
-                "predicted_label": supervised_prediction or res["majority_label"],
-                "probabilities": supervised_probs
+                "predicted_label": supervised_prediction or cluster_mapped_label,
+                "confidence": supervised_confidence if supervised_confidence is not None else cluster_purity,
+                "probabilities": supervised_probs,
+                "domain_note": domain_note,
+                "is_out_of_distribution": is_ood
             },
             "nearest_neighbors": neighbors_formatted,
             "pca_coords": [round(res["pca_2d"][0], 2), round(res["pca_2d"][1], 2)],
             "physical_stats": {
-                "brightness": round(res["image_stats"]["mean_brightness"], 1),
-                "roughness": round(res["image_stats"]["texture_roughness"], 1),
-                "red": round(res["image_stats"]["mean_red"], 1),
-                "green": round(res["image_stats"]["mean_green"], 1),
-                "blue": round(res["image_stats"]["mean_blue"], 1)
+                "brightness": round(float(res["image_stats"]["mean_brightness"]), 1),
+                "roughness": round(float(res["image_stats"]["texture_roughness"]), 1),
+                "red": round(float(res["image_stats"]["mean_red"]), 1),
+                "green": round(float(res["image_stats"]["mean_green"]), 1),
+                "blue": round(float(res["image_stats"]["mean_blue"]), 1)
             }
         }
     except Exception as e:
         logger.error("Error during image inference: %s", str(e), exc_info=True)
-        return JSONResponse(status_code=500, content={"error": "Failed to process image inference. Please ensure the file is a valid image patch."})
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to process image inference: {str(e)}"}
+        )
 
 
 class ExperimentParams(BaseModel):

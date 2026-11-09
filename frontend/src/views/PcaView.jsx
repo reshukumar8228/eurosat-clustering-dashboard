@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { 
   AreaChart, 
   Area, 
@@ -27,6 +27,46 @@ const CLUSTER_COLORS = [
   '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
 ];
 
+// Memoized Spatial Map to avoid re-rendering 4,096 SVG rects on hover
+const SpatialLoadingMap = memo(function SpatialLoadingMap({ matrix }) {
+  return (
+    <svg viewBox="0 0 64 64" className="w-full h-full rounded">
+      {matrix.map((row, r) =>
+        row.map((val, c) => (
+          <rect
+            key={`${r}-${c}`}
+            x={c}
+            y={r}
+            width="1"
+            height="1"
+            fill={val > 0 ? `rgba(59, 130, 246, ${Math.min(1, val * 40)})` : '#070B14'}
+          />
+        ))
+      )}
+    </svg>
+  );
+});
+
+// Memoized Scree Plot to avoid re-rendering Recharts on hover
+const ScreePlot = memo(function ScreePlot({ screeData }) {
+  return (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={screeData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+          <XAxis dataKey="component" stroke="#64748B" fontSize={10} />
+          <YAxis stroke="#64748B" fontSize={10} />
+          <Tooltip
+            contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+            formatter={(val) => [`${typeof val === 'number' ? val.toFixed(2) : val}%`, 'Variance']}
+          />
+          <Area type="monotone" dataKey="variance" stroke="#10B981" strokeWidth={2} fill="#10B981" fillOpacity={0.2} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+});
+
 export default function PcaView() {
   const [data, setData] = useState(null);
   const [colorMode, setColorMode] = useState('label'); // 'label' or 'cluster'
@@ -40,6 +80,46 @@ export default function PcaView() {
       .catch(err => console.error(err));
   }, []);
 
+  const pcInfo = data?.loadings?.[selectedPc];
+
+  // Pre-calculate spatial activation map for selected PC (memoized)
+  const spatialMatrix = useMemo(() => {
+    const matrix = Array.from({ length: 64 }, () => Array(64).fill(0));
+    if (pcInfo?.top_loadings) {
+      pcInfo.top_loadings.forEach(item => {
+        matrix[item.row][item.col] = Math.max(matrix[item.row][item.col], item.abs_weight);
+      });
+    }
+    return matrix;
+  }, [pcInfo]);
+
+  // Find min/max and pre-calculate canvas projection coordinates (memoized)
+  const { projectedPoints } = useMemo(() => {
+    if (!data?.scatter_points?.length) {
+      return { projectedPoints: [] };
+    }
+    const xVals = data.scatter_points.map(p => p.x);
+    const yVals = data.scatter_points.map(p => p.y);
+    const minX = Math.min(...xVals);
+    const maxX = Math.max(...xVals);
+    const minY = Math.min(...yVals);
+    const maxY = Math.max(...yVals);
+    const dx = maxX - minX || 1;
+    const dy = maxY - minY || 1;
+
+    const projected = data.scatter_points.map(p => ({
+      ...p,
+      cx: 50 + ((p.x - minX) / dx) * 700,
+      cy: 420 - ((p.y - minY) / dy) * 390
+    }));
+
+    return { projectedPoints: projected };
+  }, [data]);
+
+  const screeSlice = useMemo(() => {
+    return data?.scree ? data.scree.slice(0, 30) : [];
+  }, [data?.scree]);
+
   if (!data) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -47,23 +127,6 @@ export default function PcaView() {
       </div>
     );
   }
-
-  // Pre-calculate spatial activation map for selected PC
-  const pcInfo = data.loadings[selectedPc];
-  const spatialMatrix = Array(64).fill(0).map(() => Array(64).fill(0));
-  if (pcInfo?.top_loadings) {
-    pcInfo.top_loadings.forEach(item => {
-      spatialMatrix[item.row][item.col] = Math.max(spatialMatrix[item.row][item.col], item.abs_weight);
-    });
-  }
-
-  // Find min/max for 2D scatter bounds
-  const xVals = data.scatter_points.map(p => p.x);
-  const yVals = data.scatter_points.map(p => p.y);
-  const minX = Math.min(...xVals);
-  const maxX = Math.max(...xVals);
-  const minY = Math.min(...yVals);
-  const maxY = Math.max(...yVals);
 
   return (
     <div className="space-y-6">
@@ -127,40 +190,61 @@ export default function PcaView() {
 
         {/* 2D Scatter Canvas Container */}
         <div className="relative h-96 w-full bg-[#070B14] rounded-xl border border-slate-800/80 overflow-hidden flex items-center justify-center p-4">
-          <svg className="w-full h-full" viewBox={`0 0 800 450`}>
+          <svg className="w-full h-full" viewBox="0 0 800 450">
             {/* Grid lines */}
             <line x1="50" y1="225" x2="750" y2="225" stroke="#1E293B" strokeWidth="1" strokeDasharray="4 4" />
             <line x1="400" y1="30" x2="400" y2="420" stroke="#1E293B" strokeWidth="1" strokeDasharray="4 4" />
 
             {/* Scatter points */}
-            {data.scatter_points.map((p, idx) => {
-              const cx = 50 + ((p.x - minX) / (maxX - minX)) * 700;
-              const cy = 420 - ((p.y - minY) / (maxY - minY)) * 390;
+            {projectedPoints.map((p, idx) => {
               const fill = colorMode === 'label' ? CLASS_COLORS[p.label] || '#3B82F6' : CLUSTER_COLORS[p.cluster % 10];
+              const isHovered = hoveredPoint?.filename === p.filename;
 
               return (
                 <circle
                   key={idx}
-                  cx={cx}
-                  cy={cy}
+                  cx={p.cx}
+                  cy={p.cy}
                   r="3.5"
                   fill={fill}
-                  opacity="0.75"
-                  className="hover:opacity-100 hover:scale-150 transition-all cursor-pointer"
-                  onMouseEnter={() => setHoveredPoint(p)}
-                  onMouseLeave={() => setHoveredPoint(null)}
+                  opacity={hoveredPoint ? (isHovered ? 1 : 0.45) : 0.75}
+                  className="cursor-pointer"
+                  onMouseEnter={() => setHoveredPoint({ ...p, fill })}
+                  onMouseLeave={() => setHoveredPoint(prev => (prev?.filename === p.filename ? null : prev))}
                 />
               );
             })}
+
+            {/* Active Hover Highlight Ring (rendered on top, non-blocking) */}
+            {hoveredPoint && (
+              <g className="pointer-events-none">
+                <circle
+                  cx={hoveredPoint.cx}
+                  cy={hoveredPoint.cy}
+                  r="7.5"
+                  fill="none"
+                  stroke="#FFFFFF"
+                  strokeWidth="2.5"
+                />
+                <circle
+                  cx={hoveredPoint.cx}
+                  cy={hoveredPoint.cy}
+                  r="4.5"
+                  fill={hoveredPoint.fill}
+                />
+              </g>
+            )}
           </svg>
 
           {/* Hover Card */}
           {hoveredPoint && (
-            <div className="absolute top-4 right-4 bg-slate-900/90 border border-slate-700/80 p-3 rounded-xl text-xs text-white shadow-2xl backdrop-blur-md">
+            <div className="absolute top-4 right-4 bg-slate-900/90 border border-slate-700/80 p-3 rounded-xl text-xs text-white shadow-2xl backdrop-blur-md pointer-events-none">
               <p className="font-semibold text-blue-400">{hoveredPoint.filename}</p>
               <p className="text-slate-300">Class: <span className="text-white font-medium">{hoveredPoint.label}</span></p>
               <p className="text-slate-300">Cluster: <span className="text-white font-medium">Cluster {hoveredPoint.cluster}</span></p>
-              <p className="text-slate-400 mt-1">PC1: {hoveredPoint.x} | PC2: {hoveredPoint.y}</p>
+              <p className="text-slate-400 mt-1">
+                PC1: {typeof hoveredPoint.x === 'number' ? hoveredPoint.x.toFixed(2) : hoveredPoint.x} | PC2: {typeof hoveredPoint.y === 'number' ? hoveredPoint.y.toFixed(2) : hoveredPoint.y}
+              </p>
             </div>
           )}
         </div>
@@ -208,20 +292,7 @@ export default function PcaView() {
 
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <div className="w-48 h-48 bg-slate-950 rounded-xl border border-slate-800 p-2 flex items-center justify-center">
-              <svg viewBox="0 0 64 64" className="w-full h-full rounded">
-                {spatialMatrix.map((row, r) =>
-                  row.map((val, c) => (
-                    <rect
-                      key={`${r}-${c}`}
-                      x={c}
-                      y={r}
-                      width="1"
-                      height="1"
-                      fill={val > 0 ? `rgba(59, 130, 246, ${Math.min(1, val * 40)})` : '#070B14'}
-                    />
-                  ))
-                )}
-              </svg>
+              <SpatialLoadingMap matrix={spatialMatrix} />
             </div>
 
             <div className="flex-1 space-y-2">
@@ -256,20 +327,7 @@ export default function PcaView() {
             </div>
           </div>
 
-          <div className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.scree.slice(0, 30)}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                <XAxis dataKey="component" stroke="#64748B" fontSize={10} />
-                <YAxis stroke="#64748B" fontSize={10} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
-                  formatter={(val) => [`${val.toFixed(2)}%`, 'Variance']}
-                />
-                <Area type="monotone" dataKey="variance" stroke="#10B981" strokeWidth={2} fill="#10B981" fillOpacity={0.2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <ScreePlot screeData={screeSlice} />
         </div>
       </div>
     </div>

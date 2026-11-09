@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 const CLASS_COLORS = {
@@ -32,6 +32,26 @@ export default function TsneView() {
       .catch(err => console.error(err));
   }, [perplexity]);
 
+  const { projectedPoints } = useMemo(() => {
+    if (!data?.points?.length) return { projectedPoints: [] };
+    const xVals = data.points.map(p => p.x);
+    const yVals = data.points.map(p => p.y);
+    const minX = Math.min(...xVals);
+    const maxX = Math.max(...xVals);
+    const minY = Math.min(...yVals);
+    const maxY = Math.max(...yVals);
+    const dx = maxX - minX || 1;
+    const dy = maxY - minY || 1;
+
+    const projected = data.points.map(p => ({
+      ...p,
+      cx: 50 + ((p.x - minX) / dx) * 700,
+      cy: 420 - ((p.y - minY) / dy) * 390
+    }));
+
+    return { projectedPoints: projected };
+  }, [data]);
+
   if (!data) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -39,13 +59,6 @@ export default function TsneView() {
       </div>
     );
   }
-
-  const xVals = data.points.map(p => p.x);
-  const yVals = data.points.map(p => p.y);
-  const minX = Math.min(...xVals);
-  const maxX = Math.max(...xVals);
-  const minY = Math.min(...yVals);
-  const maxY = Math.max(...yVals);
 
   return (
     <div className="space-y-6">
@@ -125,33 +138,54 @@ export default function TsneView() {
         {/* 2D t-SNE Canvas */}
         <div className="relative h-96 w-full bg-[#070B14] rounded-xl border border-slate-800/80 overflow-hidden flex items-center justify-center p-4">
           <svg className="w-full h-full" viewBox="0 0 800 450">
-            {data.points.map((p, idx) => {
-              const cx = 50 + ((p.x - minX) / (maxX - minX)) * 700;
-              const cy = 420 - ((p.y - minY) / (maxY - minY)) * 390;
+            {projectedPoints.map((p, idx) => {
               const fill = colorMode === 'label' ? CLASS_COLORS[p.label] || '#3B82F6' : CLUSTER_COLORS[p.cluster % 10];
+              const isHovered = hoveredPoint?.filename === p.filename;
 
               return (
                 <circle
                   key={idx}
-                  cx={cx}
-                  cy={cy}
+                  cx={p.cx}
+                  cy={p.cy}
                   r="3.5"
                   fill={fill}
-                  opacity="0.8"
-                  className="hover:opacity-100 hover:scale-150 transition-all cursor-pointer"
-                  onMouseEnter={() => setHoveredPoint(p)}
-                  onMouseLeave={() => setHoveredPoint(null)}
+                  opacity={hoveredPoint ? (isHovered ? 1 : 0.45) : 0.8}
+                  className="cursor-pointer"
+                  onMouseEnter={() => setHoveredPoint({ ...p, fill })}
+                  onMouseLeave={() => setHoveredPoint(prev => (prev?.filename === p.filename ? null : prev))}
                 />
               );
             })}
+
+            {/* Active Hover Highlight Ring (rendered on top, non-blocking) */}
+            {hoveredPoint && (
+              <g className="pointer-events-none">
+                <circle
+                  cx={hoveredPoint.cx}
+                  cy={hoveredPoint.cy}
+                  r="7.5"
+                  fill="none"
+                  stroke="#FFFFFF"
+                  strokeWidth="2.5"
+                />
+                <circle
+                  cx={hoveredPoint.cx}
+                  cy={hoveredPoint.cy}
+                  r="4.5"
+                  fill={hoveredPoint.fill}
+                />
+              </g>
+            )}
           </svg>
 
           {hoveredPoint && (
-            <div className="absolute top-4 right-4 bg-slate-900/90 border border-slate-700/80 p-3 rounded-xl text-xs text-white shadow-2xl backdrop-blur-md">
+            <div className="absolute top-4 right-4 bg-slate-900/90 border border-slate-700/80 p-3 rounded-xl text-xs text-white shadow-2xl backdrop-blur-md pointer-events-none">
               <p className="font-semibold text-blue-400">{hoveredPoint.filename}</p>
               <p className="text-slate-300">Class: <span className="text-white font-medium">{hoveredPoint.label}</span></p>
               <p className="text-slate-300">Cluster: <span className="text-white font-medium">Cluster {hoveredPoint.cluster}</span></p>
-              <p className="text-slate-400 mt-1">t-SNE 1: {hoveredPoint.x} | t-SNE 2: {hoveredPoint.y}</p>
+              <p className="text-slate-400 mt-1">
+                t-SNE 1: {typeof hoveredPoint.x === 'number' ? hoveredPoint.x.toFixed(2) : hoveredPoint.x} | t-SNE 2: {typeof hoveredPoint.y === 'number' ? hoveredPoint.y.toFixed(2) : hoveredPoint.y}
+              </p>
             </div>
           )}
         </div>

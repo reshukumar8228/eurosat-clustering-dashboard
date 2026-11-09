@@ -508,13 +508,24 @@ export default function ExperimentBenchView() {
                             cy={cy}
                             r="3"
                             fill={fill}
-                            opacity="0.8"
-                            className="hover:scale-150 hover:opacity-100 cursor-pointer transition-transform"
+                            opacity={hoveredPoint ? (hoveredPoint.filename === p.filename && hoveredPoint.source === 'PCA' ? 1 : 0.45) : 0.8}
+                            className="cursor-pointer"
                             onMouseEnter={() => setHoveredPoint({ ...p, source: 'PCA' })}
-                            onMouseLeave={() => setHoveredPoint(null)}
+                            onMouseLeave={() => setHoveredPoint(prev => (prev?.filename === p.filename && prev?.source === 'PCA' ? null : prev))}
                           />
                         );
                       })}
+                      {hoveredPoint?.source === 'PCA' && (
+                        <circle
+                          cx={20 + ((hoveredPoint.x - pcaBounds.minX) / (pcaBounds.maxX - pcaBounds.minX || 1)) * 360}
+                          cy={280 - ((hoveredPoint.y - pcaBounds.minY) / (pcaBounds.maxY - pcaBounds.minY || 1)) * 260}
+                          r="6"
+                          fill="none"
+                          stroke="#FFFFFF"
+                          strokeWidth="2"
+                          className="pointer-events-none"
+                        />
+                      )}
                     </svg>
                   )}
                 </div>
@@ -549,13 +560,24 @@ export default function ExperimentBenchView() {
                             cy={cy}
                             r="3"
                             fill={fill}
-                            opacity="0.8"
-                            className="hover:scale-150 hover:opacity-100 cursor-pointer transition-transform"
+                            opacity={hoveredPoint ? (hoveredPoint.filename === p.filename && hoveredPoint.source === 't-SNE' ? 1 : 0.45) : 0.8}
+                            className="cursor-pointer"
                             onMouseEnter={() => setHoveredPoint({ ...p, source: 't-SNE' })}
-                            onMouseLeave={() => setHoveredPoint(null)}
+                            onMouseLeave={() => setHoveredPoint(prev => (prev?.filename === p.filename && prev?.source === 't-SNE' ? null : prev))}
                           />
                         );
                       })}
+                      {hoveredPoint?.source === 't-SNE' && (
+                        <circle
+                          cx={20 + ((hoveredPoint.x - tsneBounds.minX) / (tsneBounds.maxX - tsneBounds.minX || 1)) * 360}
+                          cy={280 - ((hoveredPoint.y - tsneBounds.minY) / (tsneBounds.maxY - tsneBounds.minY || 1)) * 260}
+                          r="6"
+                          fill="none"
+                          stroke="#FFFFFF"
+                          strokeWidth="2"
+                          className="pointer-events-none"
+                        />
+                      )}
                     </svg>
                   )}
                 </div>
@@ -564,7 +586,7 @@ export default function ExperimentBenchView() {
 
             {/* Hover Tooltip Card */}
             {hoveredPoint && (
-              <div className="p-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-white shadow-2xl backdrop-blur-md flex items-center justify-between">
+              <div className="p-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-white shadow-2xl backdrop-blur-md flex items-center justify-between pointer-events-none">
                 <div>
                   <span className="font-semibold text-blue-400">{hoveredPoint.filename}</span>
                   <span className="text-slate-400 mx-2">|</span>

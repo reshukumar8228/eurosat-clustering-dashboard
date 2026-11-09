@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react';
 import { 
   UploadCloud, 
-  ArrowRight
+  ArrowRight,
+  AlertCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -16,6 +18,7 @@ import {
 export default function InferenceView() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -53,6 +56,7 @@ export default function InferenceView() {
   const runPrediction = async (fileObj, presetPath) => {
     setLoading(true);
     setResult(null);
+    setError(null);
 
     const formData = new FormData();
     if (fileObj) {
@@ -66,10 +70,26 @@ export default function InferenceView() {
         method: 'POST',
         body: formData,
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error || `Server returned error status (${res.status}). Please try another valid image.`);
+        setResult(null);
+        return;
+      }
+
       const data = await res.json();
-      setResult(data);
+      if (data.error) {
+        setError(data.error);
+        setResult(null);
+      } else {
+        setResult(data);
+        setError(null);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Prediction error:", err);
+      setError('Unable to reach prediction server. Please verify backend is running on port 8000.');
+      setResult(null);
     } finally {
       setLoading(false);
     }
@@ -90,7 +110,7 @@ export default function InferenceView() {
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept=".jpg,.jpeg,.png,.tif"
+            accept=".jpg,.jpeg,.png,.tif,.tiff,.webp,.bmp,.jfif,.avif"
             className="hidden"
           />
 
@@ -101,7 +121,7 @@ export default function InferenceView() {
             Drag & drop satellite patch, or <span className="text-blue-400">browse</span>
           </h4>
           <p className="text-xs text-slate-400">
-            Supports RGB optical imagery (.jpg, .png) and multi-spectral (.tif) patches
+            Supports RGB optical imagery (.jpg, .png, .webp, .bmp), Sentinel-2 multi-spectral (.tif), and aerial patches
           </p>
         </div>
 
@@ -127,6 +147,25 @@ export default function InferenceView() {
         </div>
       </div>
 
+      {/* Error Alert Display */}
+      {error && (
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-start justify-between gap-3 text-xs animate-in fade-in">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
+            <div>
+              <p className="font-semibold text-white">Inference Message</p>
+              <p className="mt-0.5 text-rose-300/90 leading-relaxed">{error}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="text-rose-400 hover:text-white px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-xs font-semibold"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Loading Spinner */}
       {loading && (
         <div className="p-12 text-center rounded-2xl bg-[#0F172A]/70 border border-slate-800/80">
@@ -136,7 +175,7 @@ export default function InferenceView() {
       )}
 
       {/* Prediction Results Display */}
-      {result && !loading && (
+      {result && !loading && !error && result.physical_stats && (
         <div className="space-y-6">
           {/* Main Inference Card */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -149,22 +188,22 @@ export default function InferenceView() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h5 className="text-sm font-bold text-white truncate max-w-full px-2">{result.source_name}</h5>
+              <h5 className="text-sm font-bold text-white truncate max-w-full px-2">{result.source_name || "Custom Patch"}</h5>
               <p className="text-[11px] text-slate-400 mt-0.5">Input Image Patch</p>
 
               <div className="w-full pt-4 mt-4 border-t border-slate-800/80 space-y-2 text-left text-xs">
                 <div className="flex justify-between text-slate-300">
                   <span className="text-slate-400">Mean Luminance:</span>
-                  <span className="font-semibold text-white">{result.physical_stats.brightness}</span>
+                  <span className="font-semibold text-white">{result.physical_stats?.brightness ?? '—'}</span>
                 </div>
                 <div className="flex justify-between text-slate-300">
                   <span className="text-slate-400">Texture Roughness (σ):</span>
-                  <span className="font-semibold text-white">{result.physical_stats.roughness}</span>
+                  <span className="font-semibold text-white">{result.physical_stats?.roughness ?? '—'}</span>
                 </div>
                 <div className="flex justify-between text-slate-300">
                   <span className="text-slate-400">RGB Balance:</span>
                   <span className="font-mono text-slate-200">
-                    R:{result.physical_stats.red} G:{result.physical_stats.green} B:{result.physical_stats.blue}
+                    R:{result.physical_stats?.red ?? '—'} G:{result.physical_stats?.green ?? '—'} B:{result.physical_stats?.blue ?? '—'}
                   </span>
                 </div>
               </div>
@@ -175,10 +214,10 @@ export default function InferenceView() {
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                   <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-blue-500/10 border border-blue-500/30 text-blue-400">
-                    Cluster {result.unsupervised.predicted_cluster}
+                    Cluster {result.unsupervised?.predicted_cluster ?? '—'}
                   </span>
                   <span className="text-xs text-slate-400">
-                    Cluster Population: {result.unsupervised.cluster_size.toLocaleString()} patches
+                    Cluster Population: {(result.unsupervised?.cluster_size ?? 0).toLocaleString()} patches
                   </span>
                 </div>
 
@@ -188,29 +227,91 @@ export default function InferenceView() {
                     <div>
                       <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Semantic Classification</p>
                       <h4 className="text-xl font-bold text-white mt-0.5">
-                        {result.supervised_semantic.predicted_label}
+                        {result.supervised_semantic?.predicted_label ?? result.unsupervised?.mapped_label ?? 'Unknown'}
                       </h4>
                     </div>
-                    <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                      High Confidence
-                    </span>
+                    {(() => {
+                      if (result.is_out_of_distribution || result.supervised_semantic?.is_out_of_distribution) {
+                        return (
+                          <span className="text-xs font-bold px-3 py-1.5 rounded-lg border bg-rose-500/10 border-rose-500/30 text-rose-400">
+                            Non-Satellite / Out of Distribution
+                          </span>
+                        );
+                      }
+                      const conf = result.supervised_semantic?.confidence ?? 0;
+                      let badgeStyle = "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
+                      let badgeText = `High Confidence (${conf}%)`;
+                      if (conf < 50) {
+                        badgeStyle = "bg-amber-500/10 border-amber-500/20 text-amber-400";
+                        badgeText = `Low Confidence (${conf}%)`;
+                      } else if (conf < 75) {
+                        badgeStyle = "bg-blue-500/10 border-blue-500/20 text-blue-400";
+                        badgeText = `Moderate Confidence (${conf}%)`;
+                      }
+                      return (
+                        <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${badgeStyle}`}>
+                          {badgeText}
+                        </span>
+                      );
+                    })()}
                   </div>
+
+                  {/* Top Probabilities Breakdown */}
+                  {result.supervised_semantic?.probabilities && (
+                    <div className="mt-3 pt-3 border-t border-slate-800/60">
+                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                        {result.is_out_of_distribution ? "Distribution Analysis:" : "Top Class Probabilities:"}
+                      </p>
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        {result.is_out_of_distribution ? (
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/30">
+                            <span className="text-rose-300 font-medium">Out-of-Distribution Input:</span>
+                            <span className="font-bold text-rose-400">100% (Not a Satellite Patch)</span>
+                          </div>
+                        ) : (
+                          Object.entries(result.supervised_semantic.probabilities)
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 4)
+                            .map(([cls, prob]) => (
+                              <div key={cls} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/60 border border-slate-700/60">
+                                <span className="text-slate-300 font-medium">{cls}:</span>
+                                <span className="font-bold text-cyan-400">{prob}%</span>
+                              </div>
+                            ))
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
+
+                {/* Domain Shift / Outlier Notice if applicable */}
+                {result.supervised_semantic?.domain_note && (
+                  <div className={`p-3.5 rounded-xl border text-xs mb-4 flex items-start gap-2.5 ${
+                    result.is_out_of_distribution
+                      ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
+                      : "bg-cyan-500/10 border-cyan-500/30 text-cyan-300"
+                  }`}>
+                    <AlertTriangle className={`w-4 h-4 shrink-0 mt-0.5 ${
+                      result.is_out_of_distribution ? "text-rose-400" : "text-cyan-400"
+                    }`} />
+                    <span className="leading-relaxed">{result.supervised_semantic.domain_note}</span>
+                  </div>
+                )}
 
                 {/* Unsupervised Archetype Notice */}
                 <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/60 mb-4 space-y-2 text-xs">
                   <div className="flex justify-between items-center text-slate-300">
                     <span className="text-slate-400">Unsupervised Cluster Archetype:</span>
-                    <span className="text-white font-semibold">{result.unsupervised.mapped_label}</span>
+                    <span className="text-white font-semibold">{result.unsupervised?.mapped_label ?? '—'}</span>
                   </div>
                   <div className="flex justify-between items-center text-slate-300">
                     <span className="text-slate-400">Cluster Archetype Purity:</span>
-                    <span className="text-cyan-400 font-semibold">{result.unsupervised.purity_confidence}%</span>
+                    <span className="text-cyan-400 font-semibold">{result.unsupervised?.purity_confidence ?? 0}%</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden mt-1">
                     <div
                       className="bg-cyan-500 h-full rounded-full transition-all duration-700"
-                      style={{ width: `${result.unsupervised.purity_confidence}%` }}
+                      style={{ width: `${result.unsupervised?.purity_confidence ?? 0}%` }}
                     ></div>
                   </div>
                 </div>
@@ -223,7 +324,10 @@ export default function InferenceView() {
                 </p>
                 <div className="h-28">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={result.unsupervised.centroid_distances.slice(0, 8)} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+                    <BarChart
+                      data={(result.unsupervised?.centroid_distances || []).slice(0, 8)}
+                      margin={{ top: 5, right: 10, left: -25, bottom: 5 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
                       <XAxis dataKey="cluster" stroke="#64748B" fontSize={10} />
                       <YAxis stroke="#64748B" fontSize={10} />
@@ -249,7 +353,7 @@ export default function InferenceView() {
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-              {result.nearest_neighbors.map((nn, idx) => (
+              {(result.nearest_neighbors || []).map((nn, idx) => (
                 <div key={idx} className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 text-center space-y-2">
                   <div className="w-full h-24 rounded-lg overflow-hidden bg-slate-950 flex items-center justify-center">
                     <img
