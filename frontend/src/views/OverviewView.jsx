@@ -18,15 +18,18 @@ import {
   ResponsiveContainer, 
   AreaChart, 
   Area,
-  CartesianGrid 
+  CartesianGrid,
+  ReferenceLine 
 } from 'recharts';
 
 import MetricCard from '../components/MetricCard';
 import RadialGauge from '../components/RadialGauge';
+import fullScreeData from '../data/pca_scree_full.json';
 
 export default function OverviewView({ setActiveTab }) {
   const [data, setData] = useState(null);
   const [pcaData, setPcaData] = useState(null);
+  const [pcaRange, setPcaRange] = useState('all');
   const [selectedClass, setSelectedClass] = useState('Highway');
   const [categoryData, setCategoryData] = useState(null);
   const [modalImage, setModalImage] = useState(null);
@@ -193,37 +196,101 @@ export default function OverviewView({ setActiveTab }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Explained Variance Area Chart */}
         <div className="p-6 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <div>
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="min-w-0 flex-1">
               <h4 className="text-sm font-semibold text-white tracking-tight">Cumulative Explained Variance</h4>
-              <p className="text-xs text-slate-400">Progression across top principal components</p>
+              <p className="text-xs text-slate-400 truncate">
+                {pcaRange === 'all' 
+                  ? 'All 220 components reaching 91.84% retention' 
+                  : 'Progression across top 30 principal components'}
+              </p>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              PC1 + PC2: 65.30%
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center bg-slate-900/90 p-0.5 rounded-lg border border-slate-800 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setPcaRange('30')}
+                  className={`px-2 py-0.5 rounded font-medium transition-all ${
+                    pcaRange === '30' 
+                      ? 'bg-blue-600 text-white shadow-sm' 
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Top 30
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPcaRange('all')}
+                  className={`px-2 py-0.5 rounded font-medium transition-all ${
+                    pcaRange === 'all' 
+                      ? 'bg-blue-600 text-white shadow-sm' 
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  All 220
+                </button>
+              </div>
+
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
+                {pcaRange === 'all' 
+                  ? `220 PCs: ${pcaData?.variance_total ?? 91.84}%` 
+                  : 'PC1 + PC2: 65.30%'}
+              </span>
+            </div>
           </div>
 
           <div className="h-64">
-            {pcaData?.scree && (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={pcaData.scree.slice(0, 30)}>
-                  <defs>
-                    <linearGradient id="varianceGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                  <XAxis dataKey="component" stroke="#64748B" fontSize={11} />
-                  <YAxis stroke="#64748B" fontSize={11} domain={[0, 100]} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
-                    formatter={(val) => [`${val.toFixed(2)}%`, 'Cumulative Variance']}
-                  />
-                  <Area type="monotone" dataKey="cumulative" stroke="#3B82F6" strokeWidth={2.5} fillOpacity={1} fill="url(#varianceGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
+            {(() => {
+              const fullScree = (pcaData?.scree && pcaData.scree.length >= 220) ? pcaData.scree : fullScreeData;
+              const chartData = pcaRange === '30' ? fullScree.slice(0, 30) : fullScree;
+              const xTicks = pcaRange === '30' ? [1, 5, 10, 15, 20, 25, 30] : [1, 50, 100, 150, 200, 220];
+
+              return (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="varianceGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+                    <XAxis 
+                      dataKey="component" 
+                      stroke="#64748B" 
+                      fontSize={11} 
+                      ticks={xTicks}
+                      interval={0}
+                    />
+                    <YAxis stroke="#64748B" fontSize={11} domain={[0, 100]} />
+                    {pcaRange === 'all' && (
+                      <ReferenceLine 
+                        y={90} 
+                        stroke="#EF4444" 
+                        strokeDasharray="4 4" 
+                        label={{ value: '90% Threshold', fill: '#F87171', fontSize: 10, position: 'insideBottomRight' }} 
+                      />
+                    )}
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                      formatter={(val, name, item) => [
+                        `${Number(val).toFixed(2)}%`, 
+                        `PC ${item?.payload?.component || ''} Cumulative`
+                      ]}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="cumulative" 
+                      stroke="#3B82F6" 
+                      strokeWidth={2.5} 
+                      fillOpacity={1} 
+                      fill="url(#varianceGrad)" 
+                      isAnimationActive={false}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              );
+            })()}
           </div>
         </div>
 

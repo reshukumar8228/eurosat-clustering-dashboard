@@ -1,0 +1,1102 @@
+[
+  {
+    "component": 1,
+    "variance": 62.6375,
+    "cumulative": 62.64
+  },
+  {
+    "component": 2,
+    "variance": 2.658,
+    "cumulative": 65.3
+  },
+  {
+    "component": 3,
+    "variance": 2.2295,
+    "cumulative": 67.53
+  },
+  {
+    "component": 4,
+    "variance": 2.0658,
+    "cumulative": 69.59
+  },
+  {
+    "component": 5,
+    "variance": 1.3513,
+    "cumulative": 70.94
+  },
+  {
+    "component": 6,
+    "variance": 1.2472,
+    "cumulative": 72.19
+  },
+  {
+    "component": 7,
+    "variance": 0.9474,
+    "cumulative": 73.14
+  },
+  {
+    "component": 8,
+    "variance": 0.7499,
+    "cumulative": 73.89
+  },
+  {
+    "component": 9,
+    "variance": 0.7212,
+    "cumulative": 74.61
+  },
+  {
+    "component": 10,
+    "variance": 0.6708,
+    "cumulative": 75.28
+  },
+  {
+    "component": 11,
+    "variance": 0.539,
+    "cumulative": 75.82
+  },
+  {
+    "component": 12,
+    "variance": 0.5145,
+    "cumulative": 76.33
+  },
+  {
+    "component": 13,
+    "variance": 0.5087,
+    "cumulative": 76.84
+  },
+  {
+    "component": 14,
+    "variance": 0.4529,
+    "cumulative": 77.29
+  },
+  {
+    "component": 15,
+    "variance": 0.4194,
+    "cumulative": 77.71
+  },
+  {
+    "component": 16,
+    "variance": 0.3536,
+    "cumulative": 78.07
+  },
+  {
+    "component": 17,
+    "variance": 0.3438,
+    "cumulative": 78.41
+  },
+  {
+    "component": 18,
+    "variance": 0.3416,
+    "cumulative": 78.75
+  },
+  {
+    "component": 19,
+    "variance": 0.3167,
+    "cumulative": 79.07
+  },
+  {
+    "component": 20,
+    "variance": 0.2971,
+    "cumulative": 79.37
+  },
+  {
+    "component": 21,
+    "variance": 0.2829,
+    "cumulative": 79.65
+  },
+  {
+    "component": 22,
+    "variance": 0.261,
+    "cumulative": 79.91
+  },
+  {
+    "component": 23,
+    "variance": 0.2582,
+    "cumulative": 80.17
+  },
+  {
+    "component": 24,
+    "variance": 0.2433,
+    "cumulative": 80.41
+  },
+  {
+    "component": 25,
+    "variance": 0.2252,
+    "cumulative": 80.64
+  },
+  {
+    "component": 26,
+    "variance": 0.2215,
+    "cumulative": 80.86
+  },
+  {
+    "component": 27,
+    "variance": 0.2071,
+    "cumulative": 81.07
+  },
+  {
+    "component": 28,
+    "variance": 0.2056,
+    "cumulative": 81.27
+  },
+  {
+    "component": 29,
+    "variance": 0.1981,
+    "cumulative": 81.47
+  },
+  {
+    "component": 30,
+    "variance": 0.1942,
+    "cumulative": 81.66
+  },
+  {
+    "component": 31,
+    "variance": 0.1799,
+    "cumulative": 81.84
+  },
+  {
+    "component": 32,
+    "variance": 0.1721,
+    "cumulative": 82.01
+  },
+  {
+    "component": 33,
+    "variance": 0.1638,
+    "cumulative": 82.18
+  },
+  {
+    "component": 34,
+    "variance": 0.1601,
+    "cumulative": 82.34
+  },
+  {
+    "component": 35,
+    "variance": 0.157,
+    "cumulative": 82.5
+  },
+  {
+    "component": 36,
+    "variance": 0.1528,
+    "cumulative": 82.65
+  },
+  {
+    "component": 37,
+    "variance": 0.1503,
+    "cumulative": 82.8
+  },
+  {
+    "component": 38,
+    "variance": 0.1429,
+    "cumulative": 82.94
+  },
+  {
+    "component": 39,
+    "variance": 0.1412,
+    "cumulative": 83.08
+  },
+  {
+    "component": 40,
+    "variance": 0.1372,
+    "cumulative": 83.22
+  },
+  {
+    "component": 41,
+    "variance": 0.1351,
+    "cumulative": 83.36
+  },
+  {
+    "component": 42,
+    "variance": 0.1331,
+    "cumulative": 83.49
+  },
+  {
+    "component": 43,
+    "variance": 0.1301,
+    "cumulative": 83.62
+  },
+  {
+    "component": 44,
+    "variance": 0.1237,
+    "cumulative": 83.74
+  },
+  {
+    "component": 45,
+    "variance": 0.1198,
+    "cumulative": 83.86
+  },
+  {
+    "component": 46,
+    "variance": 0.1163,
+    "cumulative": 83.98
+  },
+  {
+    "component": 47,
+    "variance": 0.1127,
+    "cumulative": 84.09
+  },
+  {
+    "component": 48,
+    "variance": 0.1113,
+    "cumulative": 84.2
+  },
+  {
+    "component": 49,
+    "variance": 0.1085,
+    "cumulative": 84.31
+  },
+  {
+    "component": 50,
+    "variance": 0.106,
+    "cumulative": 84.42
+  },
+  {
+    "component": 51,
+    "variance": 0.1046,
+    "cumulative": 84.52
+  },
+  {
+    "component": 52,
+    "variance": 0.1028,
+    "cumulative": 84.62
+  },
+  {
+    "component": 53,
+    "variance": 0.1015,
+    "cumulative": 84.73
+  },
+  {
+    "component": 54,
+    "variance": 0.0993,
+    "cumulative": 84.83
+  },
+  {
+    "component": 55,
+    "variance": 0.0961,
+    "cumulative": 84.92
+  },
+  {
+    "component": 56,
+    "variance": 0.0947,
+    "cumulative": 85.02
+  },
+  {
+    "component": 57,
+    "variance": 0.0925,
+    "cumulative": 85.11
+  },
+  {
+    "component": 58,
+    "variance": 0.0913,
+    "cumulative": 85.2
+  },
+  {
+    "component": 59,
+    "variance": 0.0899,
+    "cumulative": 85.29
+  },
+  {
+    "component": 60,
+    "variance": 0.0874,
+    "cumulative": 85.38
+  },
+  {
+    "component": 61,
+    "variance": 0.0858,
+    "cumulative": 85.46
+  },
+  {
+    "component": 62,
+    "variance": 0.084,
+    "cumulative": 85.55
+  },
+  {
+    "component": 63,
+    "variance": 0.0822,
+    "cumulative": 85.63
+  },
+  {
+    "component": 64,
+    "variance": 0.0806,
+    "cumulative": 85.71
+  },
+  {
+    "component": 65,
+    "variance": 0.0802,
+    "cumulative": 85.79
+  },
+  {
+    "component": 66,
+    "variance": 0.0799,
+    "cumulative": 85.87
+  },
+  {
+    "component": 67,
+    "variance": 0.0774,
+    "cumulative": 85.95
+  },
+  {
+    "component": 68,
+    "variance": 0.0766,
+    "cumulative": 86.02
+  },
+  {
+    "component": 69,
+    "variance": 0.0757,
+    "cumulative": 86.1
+  },
+  {
+    "component": 70,
+    "variance": 0.075,
+    "cumulative": 86.17
+  },
+  {
+    "component": 71,
+    "variance": 0.074,
+    "cumulative": 86.25
+  },
+  {
+    "component": 72,
+    "variance": 0.0735,
+    "cumulative": 86.32
+  },
+  {
+    "component": 73,
+    "variance": 0.0724,
+    "cumulative": 86.39
+  },
+  {
+    "component": 74,
+    "variance": 0.0708,
+    "cumulative": 86.47
+  },
+  {
+    "component": 75,
+    "variance": 0.0704,
+    "cumulative": 86.54
+  },
+  {
+    "component": 76,
+    "variance": 0.0684,
+    "cumulative": 86.6
+  },
+  {
+    "component": 77,
+    "variance": 0.0683,
+    "cumulative": 86.67
+  },
+  {
+    "component": 78,
+    "variance": 0.0674,
+    "cumulative": 86.74
+  },
+  {
+    "component": 79,
+    "variance": 0.0668,
+    "cumulative": 86.81
+  },
+  {
+    "component": 80,
+    "variance": 0.066,
+    "cumulative": 86.87
+  },
+  {
+    "component": 81,
+    "variance": 0.0653,
+    "cumulative": 86.94
+  },
+  {
+    "component": 82,
+    "variance": 0.0641,
+    "cumulative": 87.0
+  },
+  {
+    "component": 83,
+    "variance": 0.0631,
+    "cumulative": 87.07
+  },
+  {
+    "component": 84,
+    "variance": 0.062,
+    "cumulative": 87.13
+  },
+  {
+    "component": 85,
+    "variance": 0.0609,
+    "cumulative": 87.19
+  },
+  {
+    "component": 86,
+    "variance": 0.06,
+    "cumulative": 87.25
+  },
+  {
+    "component": 87,
+    "variance": 0.0589,
+    "cumulative": 87.31
+  },
+  {
+    "component": 88,
+    "variance": 0.0584,
+    "cumulative": 87.37
+  },
+  {
+    "component": 89,
+    "variance": 0.058,
+    "cumulative": 87.42
+  },
+  {
+    "component": 90,
+    "variance": 0.0573,
+    "cumulative": 87.48
+  },
+  {
+    "component": 91,
+    "variance": 0.0568,
+    "cumulative": 87.54
+  },
+  {
+    "component": 92,
+    "variance": 0.0549,
+    "cumulative": 87.59
+  },
+  {
+    "component": 93,
+    "variance": 0.0544,
+    "cumulative": 87.65
+  },
+  {
+    "component": 94,
+    "variance": 0.054,
+    "cumulative": 87.7
+  },
+  {
+    "component": 95,
+    "variance": 0.0534,
+    "cumulative": 87.75
+  },
+  {
+    "component": 96,
+    "variance": 0.0528,
+    "cumulative": 87.81
+  },
+  {
+    "component": 97,
+    "variance": 0.0526,
+    "cumulative": 87.86
+  },
+  {
+    "component": 98,
+    "variance": 0.052,
+    "cumulative": 87.91
+  },
+  {
+    "component": 99,
+    "variance": 0.0508,
+    "cumulative": 87.96
+  },
+  {
+    "component": 100,
+    "variance": 0.0501,
+    "cumulative": 88.01
+  },
+  {
+    "component": 101,
+    "variance": 0.0497,
+    "cumulative": 88.06
+  },
+  {
+    "component": 102,
+    "variance": 0.0492,
+    "cumulative": 88.11
+  },
+  {
+    "component": 103,
+    "variance": 0.0487,
+    "cumulative": 88.16
+  },
+  {
+    "component": 104,
+    "variance": 0.0482,
+    "cumulative": 88.21
+  },
+  {
+    "component": 105,
+    "variance": 0.0479,
+    "cumulative": 88.26
+  },
+  {
+    "component": 106,
+    "variance": 0.0478,
+    "cumulative": 88.3
+  },
+  {
+    "component": 107,
+    "variance": 0.0471,
+    "cumulative": 88.35
+  },
+  {
+    "component": 108,
+    "variance": 0.0468,
+    "cumulative": 88.4
+  },
+  {
+    "component": 109,
+    "variance": 0.0466,
+    "cumulative": 88.44
+  },
+  {
+    "component": 110,
+    "variance": 0.0461,
+    "cumulative": 88.49
+  },
+  {
+    "component": 111,
+    "variance": 0.0459,
+    "cumulative": 88.54
+  },
+  {
+    "component": 112,
+    "variance": 0.0452,
+    "cumulative": 88.58
+  },
+  {
+    "component": 113,
+    "variance": 0.045,
+    "cumulative": 88.63
+  },
+  {
+    "component": 114,
+    "variance": 0.0447,
+    "cumulative": 88.67
+  },
+  {
+    "component": 115,
+    "variance": 0.0445,
+    "cumulative": 88.72
+  },
+  {
+    "component": 116,
+    "variance": 0.0434,
+    "cumulative": 88.76
+  },
+  {
+    "component": 117,
+    "variance": 0.0432,
+    "cumulative": 88.8
+  },
+  {
+    "component": 118,
+    "variance": 0.043,
+    "cumulative": 88.85
+  },
+  {
+    "component": 119,
+    "variance": 0.0425,
+    "cumulative": 88.89
+  },
+  {
+    "component": 120,
+    "variance": 0.0418,
+    "cumulative": 88.93
+  },
+  {
+    "component": 121,
+    "variance": 0.0417,
+    "cumulative": 88.97
+  },
+  {
+    "component": 122,
+    "variance": 0.041,
+    "cumulative": 89.01
+  },
+  {
+    "component": 123,
+    "variance": 0.0407,
+    "cumulative": 89.05
+  },
+  {
+    "component": 124,
+    "variance": 0.0404,
+    "cumulative": 89.09
+  },
+  {
+    "component": 125,
+    "variance": 0.0401,
+    "cumulative": 89.13
+  },
+  {
+    "component": 126,
+    "variance": 0.0399,
+    "cumulative": 89.17
+  },
+  {
+    "component": 127,
+    "variance": 0.0396,
+    "cumulative": 89.21
+  },
+  {
+    "component": 128,
+    "variance": 0.0393,
+    "cumulative": 89.25
+  },
+  {
+    "component": 129,
+    "variance": 0.039,
+    "cumulative": 89.29
+  },
+  {
+    "component": 130,
+    "variance": 0.0384,
+    "cumulative": 89.33
+  },
+  {
+    "component": 131,
+    "variance": 0.0381,
+    "cumulative": 89.37
+  },
+  {
+    "component": 132,
+    "variance": 0.0376,
+    "cumulative": 89.41
+  },
+  {
+    "component": 133,
+    "variance": 0.0373,
+    "cumulative": 89.44
+  },
+  {
+    "component": 134,
+    "variance": 0.0372,
+    "cumulative": 89.48
+  },
+  {
+    "component": 135,
+    "variance": 0.0369,
+    "cumulative": 89.52
+  },
+  {
+    "component": 136,
+    "variance": 0.0363,
+    "cumulative": 89.55
+  },
+  {
+    "component": 137,
+    "variance": 0.0361,
+    "cumulative": 89.59
+  },
+  {
+    "component": 138,
+    "variance": 0.0359,
+    "cumulative": 89.62
+  },
+  {
+    "component": 139,
+    "variance": 0.0356,
+    "cumulative": 89.66
+  },
+  {
+    "component": 140,
+    "variance": 0.0356,
+    "cumulative": 89.7
+  },
+  {
+    "component": 141,
+    "variance": 0.0351,
+    "cumulative": 89.73
+  },
+  {
+    "component": 142,
+    "variance": 0.0349,
+    "cumulative": 89.77
+  },
+  {
+    "component": 143,
+    "variance": 0.0346,
+    "cumulative": 89.8
+  },
+  {
+    "component": 144,
+    "variance": 0.0343,
+    "cumulative": 89.83
+  },
+  {
+    "component": 145,
+    "variance": 0.034,
+    "cumulative": 89.87
+  },
+  {
+    "component": 146,
+    "variance": 0.0338,
+    "cumulative": 89.9
+  },
+  {
+    "component": 147,
+    "variance": 0.0334,
+    "cumulative": 89.94
+  },
+  {
+    "component": 148,
+    "variance": 0.0332,
+    "cumulative": 89.97
+  },
+  {
+    "component": 149,
+    "variance": 0.0329,
+    "cumulative": 90.0
+  },
+  {
+    "component": 150,
+    "variance": 0.0329,
+    "cumulative": 90.03
+  },
+  {
+    "component": 151,
+    "variance": 0.0324,
+    "cumulative": 90.07
+  },
+  {
+    "component": 152,
+    "variance": 0.032,
+    "cumulative": 90.1
+  },
+  {
+    "component": 153,
+    "variance": 0.0317,
+    "cumulative": 90.13
+  },
+  {
+    "component": 154,
+    "variance": 0.0316,
+    "cumulative": 90.16
+  },
+  {
+    "component": 155,
+    "variance": 0.0314,
+    "cumulative": 90.19
+  },
+  {
+    "component": 156,
+    "variance": 0.0314,
+    "cumulative": 90.23
+  },
+  {
+    "component": 157,
+    "variance": 0.0307,
+    "cumulative": 90.26
+  },
+  {
+    "component": 158,
+    "variance": 0.0304,
+    "cumulative": 90.29
+  },
+  {
+    "component": 159,
+    "variance": 0.0303,
+    "cumulative": 90.32
+  },
+  {
+    "component": 160,
+    "variance": 0.0301,
+    "cumulative": 90.35
+  },
+  {
+    "component": 161,
+    "variance": 0.03,
+    "cumulative": 90.38
+  },
+  {
+    "component": 162,
+    "variance": 0.0299,
+    "cumulative": 90.41
+  },
+  {
+    "component": 163,
+    "variance": 0.0296,
+    "cumulative": 90.44
+  },
+  {
+    "component": 164,
+    "variance": 0.0295,
+    "cumulative": 90.47
+  },
+  {
+    "component": 165,
+    "variance": 0.0292,
+    "cumulative": 90.5
+  },
+  {
+    "component": 166,
+    "variance": 0.0291,
+    "cumulative": 90.52
+  },
+  {
+    "component": 167,
+    "variance": 0.0289,
+    "cumulative": 90.55
+  },
+  {
+    "component": 168,
+    "variance": 0.0288,
+    "cumulative": 90.58
+  },
+  {
+    "component": 169,
+    "variance": 0.0285,
+    "cumulative": 90.61
+  },
+  {
+    "component": 170,
+    "variance": 0.0285,
+    "cumulative": 90.64
+  },
+  {
+    "component": 171,
+    "variance": 0.0283,
+    "cumulative": 90.67
+  },
+  {
+    "component": 172,
+    "variance": 0.0281,
+    "cumulative": 90.7
+  },
+  {
+    "component": 173,
+    "variance": 0.0279,
+    "cumulative": 90.72
+  },
+  {
+    "component": 174,
+    "variance": 0.0273,
+    "cumulative": 90.75
+  },
+  {
+    "component": 175,
+    "variance": 0.0272,
+    "cumulative": 90.78
+  },
+  {
+    "component": 176,
+    "variance": 0.0271,
+    "cumulative": 90.8
+  },
+  {
+    "component": 177,
+    "variance": 0.027,
+    "cumulative": 90.83
+  },
+  {
+    "component": 178,
+    "variance": 0.0266,
+    "cumulative": 90.86
+  },
+  {
+    "component": 179,
+    "variance": 0.0265,
+    "cumulative": 90.88
+  },
+  {
+    "component": 180,
+    "variance": 0.0264,
+    "cumulative": 90.91
+  },
+  {
+    "component": 181,
+    "variance": 0.0262,
+    "cumulative": 90.94
+  },
+  {
+    "component": 182,
+    "variance": 0.0261,
+    "cumulative": 90.96
+  },
+  {
+    "component": 183,
+    "variance": 0.0259,
+    "cumulative": 90.99
+  },
+  {
+    "component": 184,
+    "variance": 0.0257,
+    "cumulative": 91.02
+  },
+  {
+    "component": 185,
+    "variance": 0.0256,
+    "cumulative": 91.04
+  },
+  {
+    "component": 186,
+    "variance": 0.0254,
+    "cumulative": 91.07
+  },
+  {
+    "component": 187,
+    "variance": 0.0253,
+    "cumulative": 91.09
+  },
+  {
+    "component": 188,
+    "variance": 0.0252,
+    "cumulative": 91.12
+  },
+  {
+    "component": 189,
+    "variance": 0.0249,
+    "cumulative": 91.14
+  },
+  {
+    "component": 190,
+    "variance": 0.0248,
+    "cumulative": 91.17
+  },
+  {
+    "component": 191,
+    "variance": 0.0245,
+    "cumulative": 91.19
+  },
+  {
+    "component": 192,
+    "variance": 0.0243,
+    "cumulative": 91.22
+  },
+  {
+    "component": 193,
+    "variance": 0.0243,
+    "cumulative": 91.24
+  },
+  {
+    "component": 194,
+    "variance": 0.0242,
+    "cumulative": 91.26
+  },
+  {
+    "component": 195,
+    "variance": 0.0239,
+    "cumulative": 91.29
+  },
+  {
+    "component": 196,
+    "variance": 0.0238,
+    "cumulative": 91.31
+  },
+  {
+    "component": 197,
+    "variance": 0.0237,
+    "cumulative": 91.34
+  },
+  {
+    "component": 198,
+    "variance": 0.0236,
+    "cumulative": 91.36
+  },
+  {
+    "component": 199,
+    "variance": 0.0234,
+    "cumulative": 91.38
+  },
+  {
+    "component": 200,
+    "variance": 0.0234,
+    "cumulative": 91.41
+  },
+  {
+    "component": 201,
+    "variance": 0.0232,
+    "cumulative": 91.43
+  },
+  {
+    "component": 202,
+    "variance": 0.0229,
+    "cumulative": 91.45
+  },
+  {
+    "component": 203,
+    "variance": 0.0229,
+    "cumulative": 91.47
+  },
+  {
+    "component": 204,
+    "variance": 0.0228,
+    "cumulative": 91.5
+  },
+  {
+    "component": 205,
+    "variance": 0.0226,
+    "cumulative": 91.52
+  },
+  {
+    "component": 206,
+    "variance": 0.0225,
+    "cumulative": 91.54
+  },
+  {
+    "component": 207,
+    "variance": 0.0224,
+    "cumulative": 91.56
+  },
+  {
+    "component": 208,
+    "variance": 0.0222,
+    "cumulative": 91.59
+  },
+  {
+    "component": 209,
+    "variance": 0.0221,
+    "cumulative": 91.61
+  },
+  {
+    "component": 210,
+    "variance": 0.022,
+    "cumulative": 91.63
+  },
+  {
+    "component": 211,
+    "variance": 0.022,
+    "cumulative": 91.65
+  },
+  {
+    "component": 212,
+    "variance": 0.0219,
+    "cumulative": 91.67
+  },
+  {
+    "component": 213,
+    "variance": 0.0216,
+    "cumulative": 91.7
+  },
+  {
+    "component": 214,
+    "variance": 0.0215,
+    "cumulative": 91.72
+  },
+  {
+    "component": 215,
+    "variance": 0.0213,
+    "cumulative": 91.74
+  },
+  {
+    "component": 216,
+    "variance": 0.0212,
+    "cumulative": 91.76
+  },
+  {
+    "component": 217,
+    "variance": 0.0209,
+    "cumulative": 91.78
+  },
+  {
+    "component": 218,
+    "variance": 0.0207,
+    "cumulative": 91.8
+  },
+  {
+    "component": 219,
+    "variance": 0.0205,
+    "cumulative": 91.82
+  },
+  {
+    "component": 220,
+    "variance": 0.0203,
+    "cumulative": 91.84
+  }
+]

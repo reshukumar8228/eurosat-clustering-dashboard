@@ -8,6 +8,7 @@ import {
   ResponsiveContainer, 
   CartesianGrid 
 } from 'recharts';
+import fullScreeData from '../data/pca_scree_full.json';
 
 const CLASS_COLORS = {
   AnnualCrop: '#2ca02c',
@@ -48,19 +49,23 @@ const SpatialLoadingMap = memo(function SpatialLoadingMap({ matrix }) {
 });
 
 // Memoized Scree Plot to avoid re-rendering Recharts on hover
-const ScreePlot = memo(function ScreePlot({ screeData }) {
+const ScreePlot = memo(function ScreePlot({ screeData, screeMode }) {
+  const xTicks = screeMode === '30' ? [1, 5, 10, 15, 20, 25, 30] : [1, 50, 100, 150, 200, 220];
   return (
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={screeData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-          <XAxis dataKey="component" stroke="#64748B" fontSize={10} />
+          <XAxis dataKey="component" stroke="#64748B" fontSize={10} ticks={xTicks} interval={0} />
           <YAxis stroke="#64748B" fontSize={10} />
           <Tooltip
             contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
-            formatter={(val) => [`${typeof val === 'number' ? val.toFixed(2) : val}%`, 'Variance']}
+            formatter={(val, name, item) => [
+              `${typeof val === 'number' ? val.toFixed(2) : val}% (Cumulative: ${item?.payload?.cumulative ? item.payload.cumulative.toFixed(2) : ''}%)`,
+              `PC ${item?.payload?.component || ''}`
+            ]}
           />
-          <Area type="monotone" dataKey="variance" stroke="#10B981" strokeWidth={2} fill="#10B981" fillOpacity={0.2} />
+          <Area type="monotone" dataKey="variance" stroke="#10B981" strokeWidth={2} fill="#10B981" fillOpacity={0.2} isAnimationActive={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -72,6 +77,7 @@ export default function PcaView() {
   const [colorMode, setColorMode] = useState('label'); // 'label' or 'cluster'
   const [selectedPc, setSelectedPc] = useState('PC_1');
   const [hoveredPoint, setHoveredPoint] = useState(null);
+  const [screeRange, setScreeRange] = useState('all');
 
   useEffect(() => {
     fetch('/api/pca?sample_size=2000')
@@ -117,8 +123,9 @@ export default function PcaView() {
   }, [data]);
 
   const screeSlice = useMemo(() => {
-    return data?.scree ? data.scree.slice(0, 30) : [];
-  }, [data?.scree]);
+    const fullScree = (data?.scree && data.scree.length >= 220) ? data.scree : fullScreeData;
+    return screeRange === '30' ? fullScree.slice(0, 30) : fullScree;
+  }, [data?.scree, screeRange]);
 
   if (!data) {
     return (
@@ -320,14 +327,48 @@ export default function PcaView() {
 
         {/* Scree Plot */}
         <div className="p-6 rounded-2xl bg-[#0F172A]/70 backdrop-blur-xl border border-slate-800/80 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <div>
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="min-w-0 flex-1">
               <h4 className="text-sm font-semibold text-white tracking-tight">Scree Variance Decomposition</h4>
-              <p className="text-xs text-slate-400">Individual variance of top 30 principal components</p>
+              <p className="text-xs text-slate-400 truncate">
+                {screeRange === 'all' 
+                  ? 'All 220 components (cumulative 91.84%)' 
+                  : 'Individual variance of top 30 principal components'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center bg-slate-900/90 p-0.5 rounded-lg border border-slate-800 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setScreeRange('30')}
+                  className={`px-2 py-0.5 rounded font-medium transition-all ${
+                    screeRange === '30' 
+                      ? 'bg-blue-600 text-white shadow-sm' 
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Top 30
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setScreeRange('all')}
+                  className={`px-2 py-0.5 rounded font-medium transition-all ${
+                    screeRange === 'all' 
+                      ? 'bg-blue-600 text-white shadow-sm' 
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  All 220
+                </button>
+              </div>
+
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                {screeRange === 'all' ? `Total Variance: ${data?.variance_total ?? 91.84}%` : `PC1: ${data?.variance_pc1}%`}
+              </span>
             </div>
           </div>
 
-          <ScreePlot screeData={screeSlice} />
+          <ScreePlot screeData={screeSlice} screeMode={screeRange} />
         </div>
       </div>
     </div>

@@ -247,8 +247,8 @@ def get_category_samples(category: str = Query("Highway"), count: int = Query(12
 def get_pca(sample_size: int = Query(3000, le=27000)):
     cum_var = np.cumsum(exp_var).tolist()
     scree_data = [
-        {"component": i + 1, "variance": float(exp_var[i] * 100), "cumulative": float(cum_var[i] * 100)}
-        for i in range(min(50, len(exp_var)))
+        {"component": i + 1, "variance": round(float(exp_var[i] * 100), 4), "cumulative": round(float(cum_var[i] * 100), 2)}
+        for i in range(len(exp_var))
     ]
 
     # Sample points for scatter plot
@@ -589,10 +589,10 @@ def run_experiment(params: ExperimentParams):
     scree_data = [
         {
             "component": i + 1,
-            "variance": round(float(exp_var[i] * 100), 2),
+            "variance": round(float(exp_var[i] * 100), 4),
             "cumulative": round(float(np.cumsum(exp_var)[i] * 100), 2)
         }
-        for i in range(min(50, len(exp_var)))
+        for i in range(len(exp_var))
     ]
 
     # --- K-Means Section ---
