@@ -28,21 +28,40 @@ const CLUSTER_COLORS = [
   '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
 ];
 
-// Memoized Spatial Map to avoid re-rendering 4,096 SVG rects on hover
+const CHANNEL_COLORS = {
+  Red: { fill: '#EF4444', text: 'text-red-400', dot: 'bg-red-500' },
+  Green: { fill: '#10B981', text: 'text-emerald-400', dot: 'bg-emerald-500' },
+  Blue: { fill: '#3B82F6', text: 'text-blue-400', dot: 'bg-blue-500' }
+};
+
+// Memoized Spatial Map to render 64x64 grid with channel-colored loading weights
 const SpatialLoadingMap = memo(function SpatialLoadingMap({ matrix }) {
   return (
-    <svg viewBox="0 0 64 64" className="w-full h-full rounded">
+    <svg viewBox="0 0 64 64" className="w-full h-full rounded" shapeRendering="crispEdges">
+      {/* Dark background */}
+      <rect width="64" height="64" fill="#070B14" />
+      {/* Center orientation guides */}
+      <line x1="32" y1="0" x2="32" y2="64" stroke="#1E293B" strokeWidth="0.5" strokeDasharray="1 1" />
+      <line x1="0" y1="32" x2="64" y2="32" stroke="#1E293B" strokeWidth="0.5" strokeDasharray="1 1" />
+      {/* Active pixel loadings colored by contributing spectral channel */}
       {matrix.map((row, r) =>
-        row.map((val, c) => (
-          <rect
-            key={`${r}-${c}`}
-            x={c}
-            y={r}
-            width="1"
-            height="1"
-            fill={val > 0 ? `rgba(59, 130, 246, ${Math.min(1, val * 40)})` : '#070B14'}
-          />
-        ))
+        row.map((cell, c) => {
+          if (!cell) return null;
+          const conf = CHANNEL_COLORS[cell.channel] || CHANNEL_COLORS.Blue;
+          return (
+            <rect
+              key={`${r}-${c}`}
+              x={c}
+              y={r}
+              width="1.2"
+              height="1.2"
+              fill={conf.fill}
+              fillOpacity="0.95"
+            >
+              <title>{`Row ${r}, Col ${c} | ${cell.channel} (Weight: ${cell.weight.toFixed(5)})`}</title>
+            </rect>
+          );
+        })
       )}
     </svg>
   );
@@ -88,15 +107,23 @@ export default function PcaView() {
 
   const pcInfo = data?.loadings?.[selectedPc];
 
-  // Pre-calculate spatial activation map for selected PC (memoized)
-  const spatialMatrix = useMemo(() => {
-    const matrix = Array.from({ length: 64 }, () => Array(64).fill(0));
+  // Pre-calculate spatial activation map and active channel drivers for selected PC (memoized)
+  const { spatialMatrix, activeChannels } = useMemo(() => {
+    const matrix = Array.from({ length: 64 }, () => Array(64).fill(null));
+    const channels = new Set();
     if (pcInfo?.top_loadings) {
       pcInfo.top_loadings.forEach(item => {
-        matrix[item.row][item.col] = Math.max(matrix[item.row][item.col], item.abs_weight);
+        if (item.channel) channels.add(item.channel);
+        const current = matrix[item.row][item.col];
+        if (!current || item.abs_weight > current.weight) {
+          matrix[item.row][item.col] = {
+            weight: item.abs_weight,
+            channel: item.channel
+          };
+        }
       });
     }
-    return matrix;
+    return { spatialMatrix: matrix, activeChannels: channels };
   }, [pcInfo]);
 
   // Find min/max and pre-calculate canvas projection coordinates (memoized)
@@ -316,9 +343,18 @@ export default function PcaView() {
               <div className="pt-2 border-t border-slate-800/80">
                 <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Channel Drivers:</span>
                 <div className="flex items-center gap-3 mt-1.5 text-xs">
-                  <span className="flex items-center gap-1 text-red-400"><span className="w-2 h-2 rounded-full bg-red-500"></span>Red</span>
-                  <span className="flex items-center gap-1 text-emerald-400"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>Green</span>
-                  <span className="flex items-center gap-1 text-blue-400"><span className="w-2 h-2 rounded-full bg-blue-500"></span>Blue</span>
+                  <span className={`flex items-center gap-1 transition-opacity ${activeChannels?.has('Red') ? 'text-red-400 font-medium' : 'text-slate-600 opacity-40'}`}>
+                    <span className={`w-2 h-2 rounded-full ${activeChannels?.has('Red') ? 'bg-red-500 shadow-sm shadow-red-500/50' : 'bg-slate-700'}`}></span>
+                    Red
+                  </span>
+                  <span className={`flex items-center gap-1 transition-opacity ${activeChannels?.has('Green') ? 'text-emerald-400 font-medium' : 'text-slate-600 opacity-40'}`}>
+                    <span className={`w-2 h-2 rounded-full ${activeChannels?.has('Green') ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50' : 'bg-slate-700'}`}></span>
+                    Green
+                  </span>
+                  <span className={`flex items-center gap-1 transition-opacity ${activeChannels?.has('Blue') ? 'text-blue-400 font-medium' : 'text-slate-600 opacity-40'}`}>
+                    <span className={`w-2 h-2 rounded-full ${activeChannels?.has('Blue') ? 'bg-blue-500 shadow-sm shadow-blue-500/50' : 'bg-slate-700'}`}></span>
+                    Blue
+                  </span>
                 </div>
               </div>
             </div>
