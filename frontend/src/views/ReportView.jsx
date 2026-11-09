@@ -1,6 +1,30 @@
+import { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 
 export default function ReportView() {
+  const [metrics, setMetrics] = useState({
+    variance: '91.84%',
+    components: 220,
+    ari: '0.1286',
+    purity: '30.99%'
+  });
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/pca').then(r => r.ok ? r.json() : null),
+      fetch('/api/clustering').then(r => r.ok ? r.json() : null)
+    ]).then(([pca, km]) => {
+      if (pca || km) {
+        setMetrics(prev => ({
+          variance: pca?.variance_total ? `${pca.variance_total.toFixed(2)}%` : prev.variance,
+          components: pca?.total_components || prev.components,
+          ari: km?.ari !== undefined ? km.ari.toFixed(4) : prev.ari,
+          purity: km?.overall_purity !== undefined ? `${km.overall_purity.toFixed(2)}%` : prev.purity
+        }));
+      }
+    }).catch(() => {});
+  }, []);
+
   const downloadFile = (url, filename) => {
     const a = document.createElement('a');
     a.href = url;
@@ -53,15 +77,15 @@ export default function ReportView() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
               <span className="text-xs text-slate-400">PCA Retained Variance</span>
-              <p className="text-lg font-bold text-white mt-1">91.84% (220 Components)</p>
+              <p className="text-lg font-bold text-white mt-1">{metrics.variance} ({metrics.components} Components)</p>
             </div>
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
               <span className="text-xs text-slate-400">Post-Hoc k=10 ARI</span>
-              <p className="text-lg font-bold text-white mt-1">0.1286</p>
+              <p className="text-lg font-bold text-white mt-1">{metrics.ari}</p>
             </div>
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
               <span className="text-xs text-slate-400">Overall Archetype Purity</span>
-              <p className="text-lg font-bold text-white mt-1">30.99%</p>
+              <p className="text-lg font-bold text-white mt-1">{metrics.purity}</p>
             </div>
           </div>
         </section>

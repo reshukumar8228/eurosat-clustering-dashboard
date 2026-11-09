@@ -125,8 +125,10 @@ def detect_non_satellite(img_pil: Image.Image, scaler, pca, nn_model) -> tuple[b
     scaled = scaler.transform(flat)
     pca_feat = pca.transform(scaled)
 
-    # 1. Nearest neighbor Euclidean distance in 220D PCA space
-    dists, _ = nn_model.kneighbors(pca_feat, n_neighbors=3)
+    # 1. Nearest neighbor Euclidean distance in PCA space (dimension safe)
+    nn_in = getattr(nn_model, "n_features_in_", pca_feat.shape[1])
+    pca_feat_nn = pca_feat[:, :nn_in]
+    dists, _ = nn_model.kneighbors(pca_feat_nn, n_neighbors=3)
     min_dist = float(dists[0][0])
 
     # 2. PCA reconstruction residual

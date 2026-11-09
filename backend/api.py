@@ -7,6 +7,7 @@ import sys
 import json
 import base64
 import logging
+import asyncio
 import joblib
 import numpy as np
 import pandas as pd
@@ -352,6 +353,39 @@ def get_clustering():
         "clusters": mapping_list,
         "contingency": contingency_matrix_list,
         "classes": list(contingency_df.columns)
+    }
+
+
+@app.get("/api/spectral")
+def get_spectral_profiles():
+    """Returns 13-band multi-spectral reflectance profiles computed from EuroSAT Sentinel-2 observations."""
+    spec_feat_path = os.path.join(OUTPUT_DIR, "spectral_features.csv")
+    spec_meta_path = os.path.join(OUTPUT_DIR, "spectral_metadata.csv")
+    band_names = ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B9', 'B10', 'B11', 'B12']
+
+    if os.path.exists(spec_feat_path) and os.path.exists(spec_meta_path):
+        try:
+            f = pd.read_csv(spec_feat_path)
+            m = pd.read_csv(spec_meta_path)
+            f['class'] = m['class_name']
+            band_cols = [f'B{i+1:02d}_mean' for i in range(13)]
+            means = f.groupby('class')[band_cols].mean()
+            profiles = {
+                cls: [round(float(v), 1) for v in row]
+                for cls, row in means.iterrows()
+            }
+            return {
+                "bands": band_names,
+                "classes": sorted(list(profiles.keys())),
+                "profiles": profiles
+            }
+        except Exception as e:
+            logger.warning("Failed computing spectral profiles: %s", e)
+
+    return {
+        "bands": band_names,
+        "classes": label_names,
+        "profiles": {}
     }
 
 
@@ -734,6 +768,7 @@ if __name__ == "__main__":
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8000"))
 
-    # Launch browser automatically only once the server is alive and responding
-    threading.Thread(target=_launch_browser_when_ready, args=(host, port), daemon=True).start()
+    # Launch browser automatically only once the server is alive and responding (can be suppressed via NO_BROWSER=1)
+    if os.getenv("NO_BROWSER", "0") != "1" and os.getenv("CI", "0") != "1":
+        threading.Thread(target=_launch_browser_when_ready, args=(host, port), daemon=True).start()
     uvicorn.run(app, host=host, port=port)

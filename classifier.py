@@ -47,15 +47,19 @@ class EuroSATClassifier:
         scaled_feat = self.scaler.transform(flat_feat)
 
         # PCA projection
-        pca_feat_95 = self.pca_model.transform(scaled_feat)
-        pca_2d = pca_feat_95[0, :2].tolist()
+        pca_feat_full = self.pca_model.transform(scaled_feat)
+        pca_2d = pca_feat_full[0, :2].tolist()
+
+        # Dimension safety: slice to number of features expected by KMeans model
+        km_in = getattr(self.kmeans_model, "n_features_in_", getattr(self.kmeans_model, "cluster_centers_", np.empty((0, pca_feat_full.shape[1]))).shape[1])
+        pca_feat_km = pca_feat_full[:, :km_in]
 
         # Cluster prediction
-        cluster_id = int(self.kmeans_model.predict(pca_feat_95)[0])
+        cluster_id = int(self.kmeans_model.predict(pca_feat_km)[0])
 
         # Distances to all centroids
         centroids = self.kmeans_model.cluster_centers_
-        dists = np.linalg.norm(centroids - pca_feat_95, axis=1)
+        dists = np.linalg.norm(centroids - pca_feat_km, axis=1)
         centroid_distances = {f"Cluster {i}": float(dists[i]) for i in range(len(centroids))}
 
         # Cluster metadata
@@ -65,8 +69,10 @@ class EuroSATClassifier:
             "count": 0
         })
 
-        # Nearest neighbors in training dataset
-        dists_nn, indices_nn = self.nn_model.kneighbors(pca_feat_95, n_neighbors=5)
+        # Nearest neighbors in training dataset (dimension safe)
+        nn_in = getattr(self.nn_model, "n_features_in_", km_in)
+        pca_feat_nn = pca_feat_full[:, :nn_in]
+        dists_nn, indices_nn = self.nn_model.kneighbors(pca_feat_nn, n_neighbors=5)
         neighbors = []
         for dist, idx in zip(dists_nn[0], indices_nn[0]):
             row = self.metadata_df.iloc[idx]
